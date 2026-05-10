@@ -320,7 +320,7 @@ end`,
         description: "Download energy futures data as JSON with pagination support.",
         parameters: [
             { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
-            { name: "control_area", type: "string", required: false, description: "Control area filter (e.g., ERCOT, PJM, ISONE)" },
+            { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
             { name: "block_types", type: "string", required: false, description: "Block types, Comma-separated (7x8,2x16,5x16) if not specified." },
             { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
             { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" },
@@ -439,7 +439,7 @@ end`,
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
           { name: "end_operating_date", type: "date", required: false, description: "End date for bulk download" },
-          { name: "control_area", type: "string", required: false, description: "Control area (ERCOT, ISONE, PJM)" },
+          { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" },
         ],
@@ -638,7 +638,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/ancillary-uplift/cs
         description: "Download ancillary uplift data as JSON with pagination support.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
-          { name: "control_area", type: "string", required: false, description: "Control area filter (e.g., ERCOT, PJM, ISONE)" },
+          { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" },
           { name: "raw", type: "boolean", required: false, description: "Return raw JSON response instead of file download" },
@@ -760,7 +760,7 @@ end`,
         parameters: [
         { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
         { name: "end_operating_date", type: "date", required: false, description: "End date for bulk download (YYYY-MM-DD)" },
-        { name: "control_area", type: "string", required: false, description: "Control area filter (e.g., ERCOT, PJM, ISONE)" },
+        { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
         { name: "start_date", type: "date", required: false, description: "Start date filter for historical data" },
         { name: "end_date", type: "date", required: false, description: "End date filter for historical data" }
 ],
@@ -805,7 +805,7 @@ request['X-API-Key'] = 'YOUR_API_KEY'`,
         description: "Download REC/RPS data in CSV format.",
         parameters: [
         { name: "start_operating_date", type: "date", required: true, description: "Start date for download" },
-        { name: "control_area", type: "string", required: false, description: "Control area filter (e.g., ERCOT, PJM, ISONE)" },
+        { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
         { name: "start_date", type: "date", required: false, description: "Start date filter for historical data" },
         { name: "end_date", type: "date", required: false, description: "End date filter for historical data" }
 ],
@@ -850,7 +850,7 @@ request['X-API-Key'] = 'YOUR_API_KEY'`,
         description: "Download REC/RPS data in JSON format.",
         parameters: [
         { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
-          { name: "control_area", type: "string", required: false, description: "Control area filter (e.g., ERCOT, PJM, ISONE)" },
+          { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" },
           { name: "raw", type: "boolean", required: false, description: "Return raw JSON response instead of file download" },
@@ -1061,7 +1061,7 @@ request['X-API-Key'] = 'YOUR_API_KEY'`,
 <ul>
   <li><strong>10 requests/minute</strong> for API-key users on <code>/pricing/calculate</code>, <code>/pricing/download/excel</code>, and <code>/pricing/download/csv</code>. JWT/UI users are unthrottled.</li>
   <li><code>/pricing/batch-upload</code>: <strong>600 valid rows/day</strong> per user, max <strong>2 concurrent batch jobs</strong>.</li>
-  <li><code>/pricing/options</code>, <code>/pricing/batch-template</code>, <code>/pricing/batch-status</code>, and <code>/pricing/batch-download</code> have no rate limit.</li>
+  <li><code>/pricing/options</code>, <code>/pricing/batch-template</code>, <code>/pricing/batch-jobs</code>, <code>/pricing/batch-status</code>, and <code>/pricing/batch-download</code> have no rate limit.</li>
 </ul>
 <p><strong>Batch lifecycle</strong></p>
 <ul>
@@ -1543,6 +1543,60 @@ end`,
           curl: `curl -X POST "https://api.enerpricedata.com/pricing/batch-upload" \
   -H "X-API-Key: YOUR_API_KEY" \
   -F "file=@my_batch.xlsx"`
+        }
+      },
+      {
+        method: "GET",
+        url: "/pricing/batch-jobs",
+        title: "List Recent Batch Jobs",
+        description: `<p>Return the authenticated user's most recent batch pricing jobs (newest first). Use this to re-render submitted jobs after a UI reload, or to discover <code>batch_id</code>s for jobs you no longer have locally.</p>
+<p><strong>Response fields</strong> (per job)</p>
+<ul>
+  <li><code>batch_id</code> — pass to <code>/pricing/batch-status/{batch_id}</code> or <code>/pricing/batch-download/{batch_id}</code></li>
+  <li><code>status</code> — <code>"processing"</code>, <code>"completed"</code>, or <code>"failed"</code></li>
+  <li><code>created_at</code> — ISO 8601 timestamp (may be null for older entries)</li>
+  <li><code>total_rows</code> — total rows in the original upload</li>
+</ul>
+<p>Jobs are retained for roughly 2 hours after upload. Not rate-limited. Only the authenticated user's jobs are returned.</p>`,
+        parameters: [
+          { name: "limit", type: "integer", required: false, description: "Max jobs to return, newest first. Default 20, min 1, max 100." }
+        ],
+        examples: {
+          python: `import requests
+
+url = "https://api.enerpricedata.com/pricing/batch-jobs"
+headers = {"X-API-Key": "YOUR_API_KEY"}
+params = {"limit": 20}
+
+response = requests.get(url, headers=headers, params=params)
+data = response.json()
+
+for job in data["jobs"]:
+    print(f"{job['batch_id']}  {job['status']:<10}  "
+          f"{job['total_rows']:>4} rows  created {job.get('created_at')}")`,
+          javascript: `const response = await fetch('https://api.enerpricedata.com/pricing/batch-jobs?limit=20', {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+const data = await response.json();
+data.jobs.forEach(job => {
+  console.log(\`\${job.batch_id}  \${job.status}  \${job.total_rows} rows  created \${job.created_at}\`);
+});`,
+          ruby: `require 'net/http'
+require 'json'
+
+uri = URI('https://api.enerpricedata.com/pricing/batch-jobs')
+uri.query = URI.encode_www_form(limit: 20)
+
+req = Net::HTTP::Get.new(uri, 'X-API-Key' => 'YOUR_API_KEY')
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+data = JSON.parse(res.body)
+data['jobs'].each do |job|
+  puts "#{job['batch_id']}  #{job['status']}  #{job['total_rows']} rows  created #{job['created_at']}"
+end`,
+          curl: `curl -X GET "https://api.enerpricedata.com/pricing/batch-jobs?limit=20" \
+  -H "X-API-Key: YOUR_API_KEY"`
         }
       },
       {
