@@ -1477,7 +1477,7 @@ File.open('batch_pricing_template.xlsx', 'wb') { |f| f.write(res.body) } if res.
         method: "POST",
         url: "/pricing/batch-upload",
         title: "Upload Batch Pricing File",
-        description: `<p>Upload a filled CSV or XLSX file (<code>multipart/form-data</code>, field name <code>file</code>). Returns a <code>batch_id</code> immediately; processing runs in a background Celery worker.</p>
+        description: `<p>Upload a filled CSV or XLSX file (<code>multipart/form-data</code>, field name <code>file</code>). Returns a <code>batch_id</code> immediately; processing runs asynchronously.</p>
 <p><strong>Polling flow</strong></p>
 <ul>
   <li>Use <code>/pricing/batch-status/{batch_id}</code> to poll progress.</li>
@@ -1486,7 +1486,7 @@ File.open('batch_pricing_template.xlsx', 'wb') { |f| f.write(res.body) } if res.
 <p><strong>Limits</strong></p>
 <ul>
   <li><strong>600 valid rows/day</strong> per user (HTTP 429 if exceeded; counter resets daily).</li>
-  <li><strong>2 concurrent batch jobs</strong> per user (HTTP 429 if exceeded; concurrency lock auto-releases after 30 minutes if a worker dies).</li>
+  <li><strong>2 concurrent batch jobs</strong> per user (HTTP 429 if exceeded).</li>
   <li>The 10/min API-key rate limit on <code>/pricing/calculate</code> does <strong>not</strong> apply here.</li>
 </ul>
 <p><strong>Region access</strong> is checked for every distinct ISO present in the file before dispatch. If you lack permission for any ISO in the batch in Fair Market Pricing, the entire upload is rejected with HTTP 403.</p>`,
