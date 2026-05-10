@@ -3,6 +3,41 @@
     pointer-events: none;
 }
 
+/* Inline structured prose for endpoint/section descriptions */
+.prose-doc p {
+    margin: 0 0 0.75rem 0;
+}
+.prose-doc p:last-child {
+    margin-bottom: 0;
+}
+.prose-doc ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0 0.75rem 0;
+}
+.prose-doc ul li {
+    margin: 0.15rem 0;
+}
+.prose-doc strong {
+    font-weight: 600;
+    color: rgb(17 24 39);
+}
+.dark .prose-doc strong {
+    color: rgb(243 244 246);
+}
+.prose-doc code {
+    background-color: rgb(243 244 246);
+    color: rgb(17 24 39);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.dark .prose-doc code {
+    background-color: rgb(17 24 39);
+    color: rgb(229 231 235);
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .App-logo {
         animation: App-logo-spin infinite 20s linear;
