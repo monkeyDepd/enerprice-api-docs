@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle } from 'lucide-react';
+import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle, Calculator } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { useToast } from './hooks/use-toast';
@@ -18,6 +18,7 @@ const API_SECTIONS = [
   { id: 'ancillary', title: 'Ancillary Uplift', icon: Settings },
   { id: 'rec-rps', title: 'REC/RPS', icon: Leaf },
   { id: 'utility-price', title: 'Utility Price', icon: Database },
+  { id: 'fair-market-pricing', title: 'Fair Market Pricing', icon: Calculator },
   { id: 'errors', title: 'Errors', icon: AlertTriangle },
   { id: 'notebook', title: 'Notebook', icon: FileText },
   { id: 'support', title: 'Support', icon: HelpCircle }
@@ -86,7 +87,7 @@ const ContentSection = ({ sectionId, data, selectedLanguage }) => {
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{data.title}</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">{data.description}</p>
+        <div className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed prose-doc" dangerouslySetInnerHTML={{ __html: data.description }} />
       </div>
 
       {data.endpoints && data.endpoints.map((endpoint, index) => (
@@ -105,7 +106,7 @@ const ContentSection = ({ sectionId, data, selectedLanguage }) => {
               </code>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{endpoint.title}</h3>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">{endpoint.description}</p>
+            <div className="text-gray-600 dark:text-gray-300 mt-2 prose-doc" dangerouslySetInnerHTML={{ __html: endpoint.description }} />
           </div>
 
           {endpoint.parameters && (
