@@ -31,11 +31,7 @@ export const mockApiData = {
           
           <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Rate Limits</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Requests are rate-limited per identity, resolved in this order: <strong>JWT user → API-key → client IP</strong>. Exceeding a limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header. If the rate-limit backend is unavailable, requests fail closed with <code class="text-xs">HTTP 503</code>.</p>
-            <ul class="text-sm text-gray-600 dark:text-gray-300 list-disc pl-5 space-y-1">
-              <li><strong>General:</strong> 60 requests/minute per user — applies to all dataset, graph, permission, user, and API-key endpoints.</li>
-              <li><strong>Auth:</strong> 10 requests/minute per IP — applies to login, token refresh, and password-reset flows (per-IP because the caller is unauthenticated).</li>
-            </ul>
+            <p class="text-sm text-gray-600 dark:text-gray-300">All endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header indicating how many seconds to wait before retrying.</p>
           </div>
         </div>
 
@@ -792,14 +788,60 @@ if response.status_code == 200:
     print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps');
+const params = {
+  'start_operating_date': '2025-08-01',
+  'control_area': 'ERCOT',
+  'start_date': '2025-08-01',
+  'end_date': '2030-09-01'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-01',
+  'control_area' => 'ERCOT',
+  'start_date' => '2025-08-01',
+  'end_date' => '2030-09-01'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_REC_RPS_ERCOT_2025-08-01.xlsx"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/rec-rps" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-01" \
+  --data-urlencode "control_area=ERCOT" \
+  --data-urlencode "start_date=2025-08-01" \
+  --data-urlencode "end_date=2030-09-01" \
+  -o "EPD_REC_RPS_ERCOT_2025-08-01.xlsx"`
         }
       },
       {
@@ -837,14 +879,60 @@ if response.status_code == 200:
     print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/csv');
+const params = {
+  'start_operating_date': '2025-08-01',
+  'control_area': 'ERCOT',
+  'start_date': '2025-08-01',
+  'end_date': '2030-09-01'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.csv\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps/csv')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-01',
+  'control_area' => 'ERCOT',
+  'start_date' => '2025-08-01',
+  'end_date' => '2030-09-01'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_REC_RPS_ERCOT_2025-08-01.csv"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/rec-rps/csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-01" \
+  --data-urlencode "control_area=ERCOT" \
+  --data-urlencode "start_date=2025-08-01" \
+  --data-urlencode "end_date=2030-09-01" \
+  -o "EPD_REC_RPS_ERCOT_2025-08-01.csv"`
         }
       },
       {
@@ -895,14 +983,80 @@ if response.status_code == 200:
         print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/rec-rps?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/json');
+const params = {
+  'start_operating_date': '2025-08-25',
+  'control_area': 'ERCOT',
+  'raw': False,
+  'skip': 0,
+  'limit': 100
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const data = await response.json();
+if (params.raw) {
+  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+} else {
+  const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.json\`;
+  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+  console.log(\`Saved as \${filename}\`);
+}`,
+          ruby: `require 'net/http'
+require 'uri'
+require 'json'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps/json')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-25',
+  'control_area' => 'ERCOT',
+  'raw' => False,
+  'skip' => 0,
+  'limit' => 100
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  data = JSON.parse(res.body)
+  if params[:raw] || params['raw']
+    puts "Raw JSON received: #{data.is_a?(Array) ? data.size : data.keys} records"
+  else
+    filename = "EPD_REC_RPS_ERCOT_2025-08-25.json"
+    File.write(filename, JSON.pretty_generate(data))
+    puts "Saved as #{filename}"
+  end
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `# raw=false (default) — save the JSON file:
+curl -G "https://api.enerpricedata.com/datasets/download/rec-rps/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-25" \
+  --data-urlencode "control_area=ERCOT" \
+  --data-urlencode "raw=False" \
+  --data-urlencode "skip=0" \
+  --data-urlencode "limit=100" \
+  -o "EPD_REC_RPS_ERCOT_2025-08-25.json"
+
+# raw=true — print inline JSON:
+# curl -G "https://api.enerpricedata.com/datasets/download/rec-rps/json" \
+#   -H "X-API-Key: YOUR_API_KEY" \
+#   --data-urlencode "raw=true" \
+#   --data-urlencode "start_operating_date=2025-08-15"`
         }
       },
       
@@ -947,14 +1101,54 @@ if response.status_code == 200:
 else:
     # If an error occurs, print status and response text
     print(f"Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/utility-price')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price');
+const params = {
+  'start_operating_date': '2025-08-15',
+  'end_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_UtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/utility-price')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15',
+  'end_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_UtilityPrice_2025-08-15.xlsx"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/utility-price" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  --data-urlencode "end_operating_date=2025-08-15" \
+  -o "EPD_UtilityPrice_2025-08-15.xlsx"`
         }
       },
       {
@@ -989,14 +1183,51 @@ if response.status_code == 200:
 else:
     #status and response text
     print(f"Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/utility-price')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/csv');
+const params = {
+  'start_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.zip\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/utility-price/csv')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_UtilityPrice_2025-08-15.zip"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/utility-price/csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  -o "EPD_UtilityPrice_2025-08-15.zip"`
         }
       },
       {
@@ -1042,14 +1273,77 @@ if response.status_code == 200:
         print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          /*javascript: `const response = await fetch('https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15', {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});`,
-          ruby: `uri = URI('https://api.enerpricedata.com/datasets/download/utility-price')
-request = Net::HTTP::Get.new(uri)
-request['X-API-Key'] = 'YOUR_API_KEY'`,
-          curl: `curl -X GET "https://api.enerpricedata.com/datasets/download/utility-price?start_operating_date=2024-01-15" \\
-  -H "X-API-Key: YOUR_API_KEY"`*/
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/json');
+const params = {
+  'start_operating_date': '2025-08-15',
+  'raw': False,
+  'skip': 0,
+  'limit': 100
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const data = await response.json();
+if (params.raw) {
+  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+} else {
+  const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.json\`;
+  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+  console.log(\`Saved as \${filename}\`);
+}`,
+          ruby: `require 'net/http'
+require 'uri'
+require 'json'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/utility-price/json')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15',
+  'raw' => False,
+  'skip' => 0,
+  'limit' => 100
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  data = JSON.parse(res.body)
+  if params[:raw] || params['raw']
+    puts "Raw JSON received: #{data.is_a?(Array) ? data.size : data.keys} records"
+  else
+    filename = "EPD_UtilityPrice_2025-08-15.json"
+    File.write(filename, JSON.pretty_generate(data))
+    puts "Saved as #{filename}"
+  end
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `# raw=false (default) — save the JSON file:
+curl -G "https://api.enerpricedata.com/datasets/download/utility-price/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  --data-urlencode "raw=False" \
+  --data-urlencode "skip=0" \
+  --data-urlencode "limit=100" \
+  -o "EPD_UtilityPrice_2025-08-15.json"
+
+# raw=true — print inline JSON:
+# curl -G "https://api.enerpricedata.com/datasets/download/utility-price/json" \
+#   -H "X-API-Key: YOUR_API_KEY" \
+#   --data-urlencode "raw=true" \
+#   --data-urlencode "start_operating_date=2025-08-15"`
         }
       }
 
@@ -1059,7 +1353,7 @@ request['X-API-Key'] = 'YOUR_API_KEY'`,
 
   "natural-gas-utility-price": {
     title: "Natural Gas Utility Price Data",
-    description: "Access natural gas utility pricing data — both summary and detailed rows — in Excel, CSV, or JSON format. Requires the <code>access_naturalgas_utility_price</code> permission. All endpoints live under the <code>/datasets/download/naturalgas-utility-price</code> prefix and are filtered by operating date.",
+    description: "Access natural gas utility pricing data — both summary and detailed rows — in Excel, CSV, or JSON format. All endpoints live under the <code>/datasets/download/naturalgas-utility-price</code> prefix and are filtered by operating date.",
     endpoints: [
       {
         method: "GET",
@@ -1094,7 +1388,55 @@ if response.status_code == 200:
         f.write(response.content)
     print(f"File downloaded successfully and saved as '{filename}'")
 else:
-    print(f"Error {response.status_code}: {response.text}")`
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price');
+const params = {
+  'start_operating_date': '2025-08-15',
+  'end_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_NaturalGasUtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15',
+  'end_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_NaturalGasUtilityPrice_2025-08-15.xlsx"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  --data-urlencode "end_operating_date=2025-08-15" \
+  -o "EPD_NaturalGasUtilityPrice_2025-08-15.xlsx"`
         }
       },
       {
@@ -1124,7 +1466,52 @@ if response.status_code == 200:
         f.write(response.content)
     print(f"File downloaded successfully and saved as '{filename}'")
 else:
-    print(f"Error {response.status_code}: {response.text}")`
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/summary/csv');
+const params = {
+  'start_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_NaturalGasUtilityPrice_Summary_\${params.start_operating_date}.csv\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/summary/csv')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_NaturalGasUtilityPrice_Summary_2025-08-15.csv"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/summary/csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  -o "EPD_NaturalGasUtilityPrice_Summary_2025-08-15.csv"`
         }
       },
       {
@@ -1154,7 +1541,52 @@ if response.status_code == 200:
         f.write(response.content)
     print(f"File downloaded successfully and saved as '{filename}'")
 else:
-    print(f"Error {response.status_code}: {response.text}")`
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/details/csv');
+const params = {
+  'start_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_NaturalGasUtilityPrice_Details_\${params.start_operating_date}.csv\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/details/csv')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_NaturalGasUtilityPrice_Details_2025-08-15.csv"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/details/csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  -o "EPD_NaturalGasUtilityPrice_Details_2025-08-15.csv"`
         }
       },
       {
@@ -1184,7 +1616,52 @@ if response.status_code == 200:
         f.write(response.content)
     print(f"File downloaded successfully and saved as '{filename}'")
 else:
-    print(f"Error {response.status_code}: {response.text}")`
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/csv');
+const params = {
+  'start_operating_date': '2025-08-15'
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.zip\`;
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(filename, buffer);
+console.log(\`Saved as \${filename}\`);`,
+          ruby: `require 'net/http'
+require 'uri'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/csv')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15'
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  filename = "EPD_NaturalGasUtilityPrice_2025-08-15.zip"
+  File.binwrite(filename, res.body)
+  puts "Saved as #{filename}"
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  -o "EPD_NaturalGasUtilityPrice_2025-08-15.zip"`
         }
       },
       {
@@ -1230,7 +1707,78 @@ if response.status_code == 200:
             json.dump(data, f, indent=2)
         print(f"File downloaded successfully and saved as '{filename}'")
 else:
-    print(f"Error {response.status_code}: {response.text}")`
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const fs = require('fs');
+
+const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json');
+const params = {
+  'start_operating_date': '2025-08-15',
+  'raw': False,
+  'offset': 0,
+  'limit': 100
+};
+Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const data = await response.json();
+if (params.raw) {
+  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+} else {
+  const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.json\`;
+  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+  console.log(\`Saved as \${filename}\`);
+}`,
+          ruby: `require 'net/http'
+require 'uri'
+require 'json'
+
+uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json')
+uri.query = URI.encode_www_form(
+  'start_operating_date' => '2025-08-15',
+  'raw' => False,
+  'offset' => 0,
+  'limit' => 100
+)
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  data = JSON.parse(res.body)
+  if params[:raw] || params['raw']
+    puts "Raw JSON received: #{data.is_a?(Array) ? data.size : data.keys} records"
+  else
+    filename = "EPD_NaturalGasUtilityPrice_2025-08-15.json"
+    File.write(filename, JSON.pretty_generate(data))
+    puts "Saved as #{filename}"
+  end
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `# raw=false (default) — save the JSON file:
+curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "start_operating_date=2025-08-15" \
+  --data-urlencode "raw=False" \
+  --data-urlencode "offset=0" \
+  --data-urlencode "limit=100" \
+  -o "EPD_NaturalGasUtilityPrice_2025-08-15.json"
+
+# raw=true — print inline JSON:
+# curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json" \
+#   -H "X-API-Key: YOUR_API_KEY" \
+#   --data-urlencode "raw=true" \
+#   --data-urlencode "start_operating_date=2025-08-15"`
         }
       }
     ]
@@ -1271,8 +1819,7 @@ else:
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">Interactive Examples</h3>
           <p class="text-blue-800 dark:text-blue-200 mb-4">Explore our comprehensive Jupyter notebook with examples and best practices.</p>
-          <a href="https://colab.research.google.com/github/santoshepd/enerprice-api-docs/blob/main/frontend/notebooks/demo.ipynb
-" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <a href="https://colab.research.google.com/github/monkeyDepd/enerprice-api-docs/blob/docs/natgas-and-rate-limits/frontend/notebooks/demo.ipynb" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Open in Google Colab
             <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
