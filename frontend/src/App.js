@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle, Calculator } from 'lucide-react';
+import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { useToast } from './hooks/use-toast';
@@ -18,7 +18,7 @@ const API_SECTIONS = [
   { id: 'ancillary', title: 'Ancillary Uplift', icon: Settings },
   { id: 'rec-rps', title: 'REC/RPS', icon: Leaf },
   { id: 'utility-price', title: 'Utility Price', icon: Database },
-  { id: 'fair-market-pricing', title: 'Fair Market Pricing', icon: Calculator },
+  { id: 'natural-gas-utility-price', title: 'Natural Gas Utility Price', icon: Database },
   { id: 'errors', title: 'Errors', icon: AlertTriangle },
   { id: 'notebook', title: 'Notebook', icon: FileText },
   { id: 'support', title: 'Support', icon: HelpCircle }
@@ -205,7 +205,12 @@ function App() {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
               {!isNavCollapsed && (
-                <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('home')}
+                  className="flex items-center space-x-3 text-left rounded-lg hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Go to Home"
+                >
                   <img
                     src={epdfav}
                     alt="EnerPrice Logo"
@@ -215,7 +220,7 @@ function App() {
                     {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">EnerPrice Data</h1> */}
                     {<p className="text-xs text-gray-500 dark:text-gray-400">API Documentation</p>}
                   </div>
-                </div>
+                </button>
               )}
               <Button
                 variant="ghost"
