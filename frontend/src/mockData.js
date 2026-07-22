@@ -2073,16 +2073,16 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
   },
   "fair-market-pricing": {
     title: "Fair Market Pricing (FMP)",
-    description: `Fair Market Pricing (FMP) runs EnerPrice's Fair Price Engine to produce an all-in, fully-loaded <strong>$/MWh</strong> price for a specific account and contract term — broken down by cost component and by month. Use it two ways: an <strong>on-demand</strong> single calculation, or an <strong>asynchronous batch</strong> for many accounts at once.<br/><br/>
+    description: `Fair Market Pricing (FMP) runs EnerPrice's Fair Price Engine to produce an all-in, fully-loaded <strong>$/MWh</strong> price for a specific account and contract term, broken down by cost component and by month. Use it two ways: an <strong>on-demand</strong> single calculation, or an <strong>asynchronous batch</strong> for many accounts at once.<br/><br/>
       <strong>Access:</strong> requires the <strong>Fair Market Pricing</strong> permission and access to the requested ISO region (a <code>403</code> is returned otherwise).<br/>
       <strong>Rate limits:</strong> API-key callers are limited to <strong>10 requests/minute</strong> on <code>/pricing/calculate</code> and the download endpoints; batch uploads are capped at <strong>600 rows/day</strong> and <strong>2 concurrent jobs</strong>. Batch state is held for <strong>2 hours</strong>, after which batch endpoints return <code>404</code>.
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Batch workflow</p>
         <ol class="list-decimal list-inside text-blue-800 dark:text-blue-200 space-y-1">
-          <li>Download the template — <code>GET /pricing/batch-template</code></li>
-          <li>Upload your filled file — <code>POST /pricing/batch-upload</code> → returns a <code>batch_id</code></li>
-          <li>Poll progress — <code>GET /pricing/batch-status/{batch_id}</code></li>
-          <li>Download results — <code>GET /pricing/batch-download/{batch_id}</code> → presigned Excel URL</li>
+          <li>Download the template: <code>GET /pricing/batch-template</code></li>
+          <li>Upload your filled file: <code>POST /pricing/batch-upload</code> → returns a <code>batch_id</code></li>
+          <li>Poll progress: <code>GET /pricing/batch-status/{batch_id}</code></li>
+          <li>Download results: <code>GET /pricing/batch-download/{batch_id}</code> → presigned Excel URL</li>
         </ol>
       </div>`,
     endpoints: [
@@ -2108,7 +2108,7 @@ headers = {"X-API-Key": "YOUR_API_KEY"}
 
 params = {
     "iso": "PJM",            # Required
-    "state": "OH",           # Optional — narrows the remaining options
+    "state": "OH",           # Optional, narrows the remaining options
 }
 
 response = requests.get(url, headers=headers, params=params)
@@ -2161,7 +2161,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
           { name: "load_profile", type: "string", required: true, description: "Load profile / rate class" },
           { name: "voltage", type: "string", required: true, description: "Voltage level" },
           { name: "curve_date", type: "date", required: true, description: "Curve publication date (YYYY-MM-DD)" },
-          { name: "start_date", type: "date", required: true, description: "Contract start — must be the first of a month (YYYY-MM-01)" },
+          { name: "start_date", type: "date", required: true, description: "Contract start, must be the first of a month (YYYY-MM-01)" },
           { name: "term_months", type: "integer", required: true, description: "Contract length in months (1–60)" },
           { name: "plc_kw", type: "float", required: true, description: "Capacity tag / PLC in kW (≥ 0)" },
           { name: "nspl_kw", type: "float", required: true, description: "Transmission tag / NSPL in kW (≥ 0)" },
@@ -2170,7 +2170,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
           { name: "price_to_compare", type: "float", required: false, description: "Your current $/MWh price; returns a delta vs the fair price" },
           { name: "margin / sleeve_fee / utility_billing_surcharge / other1 / other2", type: "float", required: false, description: "Adders (default 0.0). Each has a matching *_mode of \"usd\" or \"pct\"." },
           { name: "tax_rate", type: "float", required: false, description: "Percent gross-up applied to the total (default 0.0)" },
-          { name: "display_mode", type: "string", required: false, description: "\"dollars\" (default) or \"per_mwh\" — affects downloads only" }
+          { name: "display_mode", type: "string", required: false, description: "\"dollars\" (default) or \"per_mwh\", affects downloads only" }
         ],
         examples: {
           python: `import requests
@@ -2192,7 +2192,7 @@ payload = {
     "nspl_kw": 140.0,               # transmission tag
     "monthly_usage": [42000, 38000, 41000, 39000, 45000, 52000,
                       58000, 57000, 50000, 43000, 40000, 44000],  # exactly 12
-    "price_to_compare": 78.50       # optional — your current $/MWh
+    "price_to_compare": 78.50       # optional, your current $/MWh
 }
 
 response = requests.post(url, headers=headers, json=payload)
@@ -2385,7 +2385,7 @@ end`,
         method: "POST",
         url: "/pricing/download/csv",
         title: "Download Single Pricing Report (CSV)",
-        description: "Same JSON request body as <code>/pricing/calculate</code>; returns a CSV with three stacked sections — Summary, Component Breakdown, and Monthly Breakdown.",
+        description: "Same JSON request body as <code>/pricing/calculate</code>; returns a CSV with three stacked sections: Summary, Component Breakdown, and Monthly Breakdown.",
         parameters: [
           { name: "(request body)", type: "object", required: true, description: "Identical to the /pricing/calculate JSON body." }
         ],
@@ -2468,7 +2468,7 @@ puts "Saved CSV"`,
         method: "GET",
         url: "/pricing/batch-template",
         title: "Download Batch Template (Excel)",
-        description: "Download the empty Excel template for batch pricing — one row per account. Fill it in and submit it to /pricing/batch-upload.",
+        description: "Download the empty Excel template for batch pricing, one row per account. Fill it in and submit it to /pricing/batch-upload.",
         parameters: [],
         examples: {
           python: `import requests
@@ -2547,7 +2547,7 @@ const response = await fetch('https://api.enerpricedata.com/pricing/batch-upload
 });
 
 const data = await response.json();
-console.log(\`batch_id: \${data.batch_id} — \${data.valid_rows}/\${data.total_rows} accepted\`);`,
+console.log(\`batch_id: \${data.batch_id}, \${data.valid_rows}/\${data.total_rows} accepted\`);`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -2560,7 +2560,7 @@ req.set_form(form, 'multipart/form-data')
 
 res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
 data = JSON.parse(res.body)
-puts "batch_id: #{data['batch_id']} — #{data['valid_rows']}/#{data['total_rows']} accepted"`,
+puts "batch_id: #{data['batch_id']}, #{data['valid_rows']}/#{data['total_rows']} accepted"`,
           curl: `curl -X POST "https://api.enerpricedata.com/pricing/batch-upload" \
   -H "X-API-Key: YOUR_API_KEY" \
   -F "file=@batch_pricing_filled.xlsx"`
@@ -2651,7 +2651,7 @@ puts "status: #{data['status']} (#{data['completed']}/#{data['total']} done)"`,
         method: "GET",
         url: "/pricing/batch-download/{batch_id}",
         title: "Download Batch Results",
-        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the result Excel — <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes) — download it promptly. Only available once the batch <code>status</code> is <code>completed</code>. Admin keys receive the full component breakdown; standard keys receive a rolled-up workbook.",
+        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the result Excel, <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes), download it promptly. Only available once the batch <code>status</code> is <code>completed</code>. Admin keys receive the full component breakdown; standard keys receive a rolled-up workbook.",
         parameters: [
           { name: "batch_id", type: "string", required: true, description: "Batch id returned by /pricing/batch-upload (path parameter)" }
         ],
@@ -2711,14 +2711,14 @@ curl -G "https://api.enerpricedata.com/pricing/batch-download/a3f8d2e1c4b7" \
   "comparative-savings": {
     title: "Comparative Savings Analysis",
     description: `Comparative Savings shows how much an account could save by switching from its current <em>Utility Price</em> to EnerPrice's <em>Fair Market Price (FMP)</em>. Upload a spreadsheet of meter reads (one workbook, up to <strong>200 rows</strong>); the engine prices each account and returns a per-account and summary savings workbook.<br/><br/>
-      It follows the same asynchronous pattern as batch pricing — <strong>template → upload → poll status → download</strong> — and jobs are retained for <strong>2 hours</strong>. Requires the <strong>Utility Price</strong> permission.
+      It follows the same asynchronous pattern as batch pricing, <strong>template → upload → poll status → download</strong>, and jobs are retained for <strong>2 hours</strong>. Requires the <strong>Utility Price</strong> permission.
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Workflow</p>
         <ol class="list-decimal list-inside text-blue-800 dark:text-blue-200 space-y-1">
-          <li>Download the template — <code>GET /api/v1/utility-price/savings-template</code></li>
-          <li>Upload your filled file — <code>POST /api/v1/utility-price/savings-upload</code> → returns a <code>batch_id</code></li>
-          <li>Poll progress — <code>GET /api/v1/utility-price/savings-status/{batch_id}</code></li>
-          <li>Download results — <code>GET /api/v1/utility-price/savings-download/{batch_id}</code> → presigned Excel URL</li>
+          <li>Download the template: <code>GET /api/v1/utility-price/savings-template</code></li>
+          <li>Upload your filled file: <code>POST /api/v1/utility-price/savings-upload</code> → returns a <code>batch_id</code></li>
+          <li>Poll progress: <code>GET /api/v1/utility-price/savings-status/{batch_id}</code></li>
+          <li>Download results: <code>GET /api/v1/utility-price/savings-download/{batch_id}</code> → presigned Excel URL</li>
         </ol>
       </div>`,
     endpoints: [
@@ -2866,7 +2866,7 @@ JSON.parse(res.body)['jobs'].each { |j| puts "#{j['batch_id']}  #{j['status']}  
         method: "GET",
         url: "/api/v1/utility-price/savings-status/{batch_id}",
         title: "Get Savings Status",
-        description: "Check progress of a savings job. Once complete, <code>accounts</code> is populated with per-account results — each with a <code>header</code>, priced <code>rows</code>, a <code>summary</code>, and a <code>price_unit</code> (<code>$/kWh</code> for power, <code>$/MMBtu</code> for gas).",
+        description: "Check progress of a savings job. Once complete, <code>accounts</code> is populated with per-account results, each with a <code>header</code>, priced <code>rows</code>, a <code>summary</code>, and a <code>price_unit</code> (<code>$/kWh</code> for power, <code>$/MMBtu</code> for gas).",
         parameters: [
           { name: "batch_id", type: "string", required: true, description: "Batch id returned by /savings-upload (path parameter)" }
         ],
@@ -2910,7 +2910,7 @@ puts "status: #{data['status']} (#{data['accounts'].size} accounts)"`,
         method: "GET",
         url: "/api/v1/utility-price/savings-download/{batch_id}",
         title: "Download Savings Results",
-        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the results Excel — <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes) — download it promptly. Only available once the job <code>status</code> is <code>completed</code>.",
+        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the results Excel, <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes), download it promptly. Only available once the job <code>status</code> is <code>completed</code>.",
         parameters: [
           { name: "batch_id", type: "string", required: true, description: "Batch id returned by /savings-upload (path parameter)" }
         ],
@@ -2994,7 +2994,7 @@ curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-download/a3f
               </tr>
             </tbody>
           </table>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Prices are expressed per unit — <code>$/kWh</code> for electricity and <code>$/MMBtu</code> for natural gas (see each account's <code>price_unit</code>).</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Prices are expressed per unit, <code>$/kWh</code> for electricity and <code>$/MMBtu</code> for natural gas (see each account's <code>price_unit</code>).</p>
         </div>
       </div>
     `
