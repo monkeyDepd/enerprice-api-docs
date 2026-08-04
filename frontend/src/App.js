@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle } from 'lucide-react';
+import { Moon, Sun, Menu, X, Copy, ChevronDown, Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle, Flame, Calculator, TrendingDown } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { useToast } from './hooks/use-toast';
@@ -15,10 +15,13 @@ const API_SECTIONS = [
   { id: 'home', title: 'Home', icon: Book },
   { id: 'auth', title: 'Authentication', icon: Key },
   { id: 'energy-futures', title: 'Energy Futures', icon: Zap },
+  { id: 'natgas-energy-futures', title: 'Natural Gas Energy Futures', icon: Flame },
   { id: 'ancillary', title: 'Ancillary Uplift', icon: Settings },
   { id: 'rec-rps', title: 'REC/RPS', icon: Leaf },
   { id: 'utility-price', title: 'Utility Price', icon: Database },
   { id: 'natural-gas-utility-price', title: 'Natural Gas Utility Price', icon: Database },
+  { id: 'fair-market-pricing', title: 'Fair Market Pricing', icon: Calculator },
+  { id: 'comparative-savings', title: 'Comparative Savings', icon: TrendingDown },
   { id: 'errors', title: 'Errors', icon: AlertTriangle },
   { id: 'notebook', title: 'Notebook', icon: FileText },
   { id: 'support', title: 'Support', icon: HelpCircle }
@@ -136,7 +139,7 @@ const ContentSection = ({ sectionId, data, selectedLanguage }) => {
                             {param.required ? 'Required' : 'Optional'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{param.description}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 prose-doc" dangerouslySetInnerHTML={{ __html: param.description }} />
                       </tr>
                     ))}
                   </tbody>
