@@ -429,8 +429,67 @@ end`,
 
   "natgas-energy-futures": {
     title: "Natural Gas Energy Futures Data",
-    description: "Access Natural Gas <strong>futures</strong> (forward curve) pricing: monthly baseload gas prices published as a single combined dataset covering all settlement points. Download in Excel, CSV, or JSON.<br/><br/><strong>Data availability:</strong> curves are published on business days. A <code>404 No NG Futures dataset found</code> means that publication date isn't available yet, so retry with the most recent business day.",
+    description: "Access Natural Gas <strong>futures</strong> (forward curve) pricing: monthly baseload gas prices published as a single combined dataset covering all settlement points. Download in Excel, CSV, or JSON.<br/><br/><strong>Data availability:</strong> curves are published on business days.<br/><br/><strong>Settlement points:</strong> valid <code>settlement_point</code> values are returned by the settlement points endpoint below. Values are <strong>case sensitive</strong> and must be passed exactly as returned.",
     endpoints: [
+      {
+        method: "GET",
+        url: "/graph/api/v1/naturalgas-futures/settlement-points",
+        title: "List Settlement Points",
+        description: "Returns the settlement points available for a given curve publication date, as <code>{ success, settlement_points }</code> with the names sorted alphabetically. Use this to discover valid <code>settlement_point</code> filter values before calling the download endpoints. Values are <strong>case sensitive</strong>: pass them through exactly as returned. A publication date with no curve returns <code>404</code>.",
+        parameters: [
+          { name: "operating_date", type: "date", required: true, description: "Curve publication date to list settlement points for (YYYY-MM-DD)" }
+        ],
+        examples: {
+          python: `import requests
+
+url = "https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points"
+
+headers = {"X-API-Key": "YOUR_API_KEY"}
+
+params = {"operating_date": "2025-08-15"}   # Required: curve publication date
+
+response = requests.get(url, headers=headers, params=params)
+
+if response.status_code == 200:
+    print(response.json()["settlement_points"])
+else:
+    print(f"Error {response.status_code}: {response.text}")`,
+          javascript: `const url = new URL('https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points');
+url.searchParams.append('operating_date', '2025-08-15');
+
+const response = await fetch(url, {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' }
+});
+
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const data = await response.json();
+console.log(data.settlement_points);`,
+          ruby: `require 'net/http'
+require 'uri'
+require 'json'
+
+uri = URI('https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points')
+uri.query = URI.encode_www_form('operating_date' => '2025-08-15')
+
+req = Net::HTTP::Get.new(uri)
+req['X-API-Key'] = 'YOUR_API_KEY'
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+if res.is_a?(Net::HTTPSuccess)
+  puts JSON.parse(res.body)['settlement_points']
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  --data-urlencode "operating_date=2025-08-15"`
+        }
+      },
       {
         method: "GET",
         url: "/datasets/download/naturalgas-futures",
@@ -438,7 +497,7 @@ end`,
         description: "Download the natural gas futures curve for a publication date as an Excel workbook.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point (e.g. Henry Hub). Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" }
         ],
@@ -520,7 +579,7 @@ end`,
         description: "Download the natural gas futures curve for a publication date as a CSV file.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" }
         ],
@@ -602,7 +661,7 @@ end`,
         description: "Returns the natural gas futures curve as JSON. Set <code>raw=true</code> for an inline, paginated JSON response of the form <code>{ data, total, page, size }</code>.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" },
           { name: "raw", type: "boolean", required: false, description: "If true, returns inline paginated JSON instead of a file download" },
@@ -1641,7 +1700,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/utility-price/json" \
 
   "natural-gas-utility-price": {
     title: "Natural Gas Utility Price Data",
-    description: "Access natural gas utility pricing data — both summary and detailed rows — in Excel, CSV, or JSON format. All endpoints live under the <code>/datasets/download/naturalgas-utility-price</code> prefix and are filtered by operating date.",
+    description: "Access natural gas utility pricing data, both summary and detailed rows, in Excel, CSV, or JSON format.",
     endpoints: [
       {
         method: "GET",
@@ -2073,17 +2132,102 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
   },
   "fair-market-pricing": {
     title: "Fair Market Pricing (FMP)",
-    description: `Fair Market Pricing (FMP) runs EnerPrice's Fair Price Engine to produce an all-in, fully-loaded <strong>$/MWh</strong> price for a specific account and contract term, broken down by cost component and by month. Use it two ways: an <strong>on-demand</strong> single calculation, or an <strong>asynchronous batch</strong> for many accounts at once.<br/><br/>
-      <strong>Access:</strong> requires the <strong>Fair Market Pricing</strong> permission and access to the requested ISO region (a <code>403</code> is returned otherwise).<br/>
-      <strong>Rate limits:</strong> API-key callers are limited to <strong>10 requests/minute</strong> on <code>/pricing/calculate</code> and the download endpoints; batch uploads are capped at <strong>600 rows/day</strong> and <strong>2 concurrent jobs</strong>. Batch state is held for <strong>2 hours</strong>, after which batch endpoints return <code>404</code>.
+    description: `Fair Market Pricing (FMP) runs EnerPrice's Fair Price Engine to produce an all-in, fully-loaded price, in <strong>$/MWh</strong> or <strong>$/kWh</strong>, for a specific account and contract term, broken down by cost component and by month. Each request prices <strong>one account</strong> and returns the full report in the response body, so there is nothing to poll and no job state to track.
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-sm text-left border-collapse">
+          <tbody>
+            <tr class="border-b dark:border-gray-600 align-top">
+              <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Access</td>
+              <td class="py-3 px-3 text-gray-600 dark:text-gray-300">Requires the <strong>Fair Market Pricing</strong> permission and access to the requested ISO region. A <code>403</code> is returned otherwise.</td>
+            </tr>
+            <tr class="border-b dark:border-gray-600 align-top">
+              <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Units</td>
+              <td class="py-3 px-3 text-gray-600 dark:text-gray-300">Every request declares a basis with <code>unit</code>: <code>"MWh"</code> (the default, and what the API has always accepted) or <code>"kWh"</code>. Spelling is exact, so <code>"kwh"</code> and <code>"KWH"</code> are rejected with a <code>422</code>. Omit the field and nothing about your integration changes.</td>
+            </tr>
+            <tr class="border-b dark:border-gray-600 align-top">
+              <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Limits</td>
+              <td class="py-3 px-3 text-gray-600 dark:text-gray-300">
+                <strong>10 requests/minute</strong>, <strong>600 requests/day</strong>, <strong>3 concurrent</strong>.
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                  <li><code>/pricing/calculate</code> and the two download endpoints hold separate per-minute counters, so pricing an account and exporting it do not spend each other's slots.</li>
+                  <li>Only <code>/pricing/calculate</code> charges the daily quota. <code>/pricing/options</code> is not metered at all.</li>
+                  <li>A burst <code>429</code> carries <code>Retry-After</code>. A daily-quota <code>429</code> does not, because the answer is always "tomorrow".</li>
+                </ul>
+              </td>
+            </tr>
+            <tr class="align-top">
+              <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Exports</td>
+              <td class="py-3 px-3 text-gray-600 dark:text-gray-300">A calculation stays reusable by the download endpoints for <strong>15 minutes</strong>, so pricing an account and then exporting the same request costs one calculation, not two.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+        <p class="font-semibold text-amber-900 dark:text-amber-100 mb-3">What <code>unit</code> does and does not change</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr class="border-b border-amber-300 dark:border-amber-700">
+                <th class="py-2 px-3 text-amber-900 dark:text-amber-100">Field</th>
+                <th class="py-2 px-3 text-amber-900 dark:text-amber-100 whitespace-nowrap">Follows <code>unit</code>?</th>
+                <th class="py-2 px-3 text-amber-900 dark:text-amber-100">Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>monthly_usage</code></td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Energy, read as kWh or MWh</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>margin</code>, <code>sleeve_fee</code>, <code>utility_billing_surcharge</code>, <code>other1</code> &mdash; in <code>usd</code> mode</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Flat rates, read as $/kWh or $/MWh</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">The same four adders &mdash; in <code>pct</code> mode</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">No</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">A share of supply cost, so unit-free</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>price_to_compare</code></td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">A rate, like the adders</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Every rate and energy figure in the response</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Reported on the basis you asked for</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">The Excel and CSV exports</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Values and column headers both</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>plc_kw</code>, <code>nspl_kw</code></td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">No</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Demand tags, kW on both bases</td>
+              </tr>
+              <tr class="border-b border-amber-200 dark:border-amber-800">
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>tax_rate</code>, <code>savings_pct</code></td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">No</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Percentages</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>total_savings</code>, the monthly <code>*_cost</code> fields</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">No</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Absolute dollars</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-amber-800 dark:text-amber-200 mt-3">The response echoes <code>unit</code> back. Field names keep their historical <code>_per_mwh</code> and <code>_mwh</code> suffixes for backward compatibility and <strong>no longer imply MWh</strong>: read <code>unit</code> to interpret them. Precision follows the basis too, since $/kWh needs more decimals to carry the same information &mdash; rates are rounded to <strong>5</strong> decimals on kWh and <strong>2</strong> on MWh, energy to <strong>1</strong> and <strong>4</strong>.</p>
+        <p class="text-sm text-amber-800 dark:text-amber-200 mt-2">Sending usage on the wrong basis is a 1000x error that still prices cleanly, so the engine checks the implied load factor, <code>annual kWh / (PLC kW &times; 8760)</code>. Outside <strong>5-110%</strong> you get a <code>warnings</code> entry naming <code>unit</code> as the likely culprit. The request is still priced, since unusual-but-real accounts exist, but treat it as a prompt to check the basis.</p>
+      </div>
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Batch workflow</p>
-        <ol class="list-decimal list-inside text-blue-800 dark:text-blue-200 space-y-1">
-          <li>Download the template: <code>GET /pricing/batch-template</code></li>
-          <li>Upload your filled file: <code>POST /pricing/batch-upload</code> → returns a <code>batch_id</code></li>
-          <li>Poll progress: <code>GET /pricing/batch-status/{batch_id}</code></li>
-          <li>Download results: <code>GET /pricing/batch-download/{batch_id}</code> → presigned Excel URL</li>
-        </ol>
+        <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Pricing a portfolio</p>
+        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, paced to 10 requests/minute. The daily quota of <strong>600 requests</strong> is the ceiling that matters, and it is the same 600 whichever way an account gets priced. Every account comes back as structured JSON you can store directly, so there is no bulk endpoint to reach for.</p>
       </div>`,
     endpoints: [
       {
@@ -2152,7 +2296,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
         method: "POST",
         url: "/pricing/calculate",
         title: "Calculate Fair Market Price",
-        description: "Run the Fair Price Engine for a single account. <strong>Send parameters as a JSON request body</strong> (not query string). Returns a full pricing report with a component breakdown, month-by-month detail, and the weighted-average <code>total_fr_price</code> ($/MWh). Provide <code>price_to_compare</code> to get a <code>delta</code> vs your current price.",
+        description: "Run the Fair Price Engine for a single account. <strong>Send parameters as a JSON request body</strong> (not query string). Returns a full pricing report with a component breakdown, month-by-month detail, and the weighted-average <code>total_fr_price</code>, expressed in whichever <code>unit</code> you asked for. Provide <code>price_to_compare</code> to get a <code>delta</code> vs your current price, on that same basis.",
         parameters: [
           { name: "iso", type: "string", required: true, description: "ISO region (PJM, ISONE, NYISO, ERCOT, MISO, SPP, CAISO)" },
           { name: "state", type: "string", required: true, description: "Account state" },
@@ -2165,12 +2309,19 @@ puts "Load zones: #{data['available_load_zones']}"`,
           { name: "term_months", type: "integer", required: true, description: "Contract length in months (1–60)" },
           { name: "plc_kw", type: "float", required: true, description: "Capacity tag / PLC in kW (≥ 0)" },
           { name: "nspl_kw", type: "float", required: true, description: "Transmission tag / NSPL in kW (≥ 0)" },
-          { name: "monthly_usage", type: "float[]", required: true, description: "Exactly 12 monthly usage values (kWh); sum must be > 0" },
+          { name: "unit", type: "string", required: false, description: "Basis for your usage and $ rates: <code>\"MWh\"</code> (default) or <code>\"kWh\"</code>, spelled exactly. Sets how monthly_usage, the usd-mode adders and price_to_compare are read, and the basis every rate and energy figure in the response and the exports is reported in." },
+          { name: "monthly_usage", type: "float[]", required: true, description: "Exactly 12 monthly usage values, January through December, in whichever <code>unit</code> you set; sum must be > 0." },
           { name: "capacity_zone", type: "string", required: false, description: "Capacity zone (if applicable)" },
           { name: "price_to_compare", type: "float", required: false, description: "Your current $/MWh price; returns a delta vs the fair price" },
-          { name: "margin / sleeve_fee / utility_billing_surcharge / other1 / other2", type: "float", required: false, description: "Adders (default 0.0). Each has a matching *_mode of \"usd\" or \"pct\"." },
-          { name: "tax_rate", type: "float", required: false, description: "Percent gross-up applied to the total (default 0.0)" },
-          { name: "display_mode", type: "string", required: false, description: "\"dollars\" (default) or \"per_mwh\", affects downloads only" }
+          { name: "account_id", type: "string", required: false, description: "Your identifier for the account. Reporting only, echoed back in the response so you can match results to your own records." },
+          { name: "account_address", type: "string", required: false, description: "Service address. Reporting only, echoed back in the response." },
+          { name: "account_number", type: "string", required: false, description: "Utility account number. Reporting only, echoed back in the response." },
+          { name: "margin", type: "float", required: false, description: "Supply margin adder, default 0.0. Paired with <code>margin_mode</code>." },
+          { name: "sleeve_fee", type: "float", required: false, description: "Sleeve fee adder, default 0.0. Paired with <code>sleeve_fee_mode</code>." },
+          { name: "utility_billing_surcharge", type: "float", required: false, description: "Utility billing surcharge adder, default 0.0. Paired with <code>utility_billing_surcharge_mode</code>." },
+          { name: "other1", type: "float", required: false, description: "Free-use adder, default 0.0. Paired with <code>other1_mode</code>." },
+          { name: "margin_mode / sleeve_fee_mode / utility_billing_surcharge_mode / other1_mode", type: "string", required: false, description: "How the matching adder is read: <code>\"usd\"</code> (default) treats it as a flat rate on your <code>unit</code> basis, <code>\"pct\"</code> treats it as a percent of the pre-adder supply cost." },
+          { name: "tax_rate", type: "float", required: false, description: "Percent gross-up applied to the full pre-tax total (default 0.0): final rate = (COGS + adders + margin) / (1 - tax_rate/100)" }
         ],
         examples: {
           python: `import requests
@@ -2179,6 +2330,7 @@ url = "https://api.enerpricedata.com/pricing/calculate"
 headers = {"X-API-Key": "YOUR_API_KEY", "Content-Type": "application/json"}
 
 payload = {
+    "unit": "MWh",                  # Optional: "MWh" (default) or "kWh"
     "iso": "PJM",
     "state": "OH",
     "utility_name": "AEP Ohio",
@@ -2190,16 +2342,24 @@ payload = {
     "term_months": 12,              # 1–60
     "plc_kw": 150.0,                # capacity tag
     "nspl_kw": 140.0,               # transmission tag
-    "monthly_usage": [42000, 38000, 41000, 39000, 45000, 52000,
-                      58000, 57000, 50000, 43000, 40000, 44000],  # exactly 12
+    "monthly_usage": [42, 38, 41, 39, 45, 52,
+                      58, 57, 50, 43, 40, 44],  # exactly 12, in the unit above
     "price_to_compare": 78.50       # optional, your current $/MWh
 }
+
+# The same account on a kWh basis: usage x1000, $ rates /1000.
+# Both price identically; only the reported basis differs.
+# payload = {**payload,
+#            "unit": "kWh",
+#            "monthly_usage": [42000, 38000, 41000, 39000, 45000, 52000,
+#                              58000, 57000, 50000, 43000, 40000, 44000],
+#            "price_to_compare": 0.07850}
 
 response = requests.post(url, headers=headers, json=payload)
 
 if response.status_code == 200:
     data = response.json()
-    print(f"Fair market price: \${data['total_fr_price']}/MWh")
+    print(f"Fair market price: \${data['total_fr_price']} per {data['unit']}")
     print(f"Delta vs price_to_compare: \${data['delta']}/MWh")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
@@ -2210,6 +2370,7 @@ else:
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
+    unit: 'MWh',                // Optional: 'MWh' (default) or 'kWh'
     iso: 'PJM',
     state: 'OH',
     utility_name: 'AEP Ohio',
@@ -2221,8 +2382,8 @@ else:
     term_months: 12,
     plc_kw: 150.0,
     nspl_kw: 140.0,
-    monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                    58000, 57000, 50000, 43000, 40000, 44000],
+    monthly_usage: [42, 38, 41, 39, 45, 52,   // exactly 12, in the unit above
+                    58, 57, 50, 43, 40, 44],
     price_to_compare: 78.50
   })
 });
@@ -2231,7 +2392,7 @@ if (!response.ok) {
   console.error(\`Error \${response.status}: \${await response.text()}\`);
 } else {
   const data = await response.json();
-  console.log(\`Fair market price: $\${data.total_fr_price}/MWh (delta $\${data.delta})\`);
+  console.log(\`Fair market price: $\${data.total_fr_price} per \${data.unit} (delta $\${data.delta})\`);
 }`,
           ruby: `require 'net/http'
 require 'uri'
@@ -2251,8 +2412,8 @@ req.body = {
   term_months: 12,
   plc_kw: 150.0,
   nspl_kw: 140.0,
-  monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                  58000, 57000, 50000, 43000, 40000, 44000],
+  monthly_usage: [42, 38, 41, 39, 45, 52,
+                  58, 57, 50, 43, 40, 44],
   price_to_compare: 78.50
 }.to_json
 
@@ -2268,6 +2429,7 @@ end`,
   -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
+    "unit": "MWh",
     "iso": "PJM",
     "state": "OH",
     "utility_name": "AEP Ohio",
@@ -2279,7 +2441,7 @@ end`,
     "term_months": 12,
     "plc_kw": 150.0,
     "nspl_kw": 140.0,
-    "monthly_usage": [42000,38000,41000,39000,45000,52000,58000,57000,50000,43000,40000,44000],
+    "monthly_usage": [42,38,41,39,45,52,58,57,50,43,40,44],
     "price_to_compare": 78.50
   }'`
         }
@@ -2288,9 +2450,9 @@ end`,
         method: "POST",
         url: "/pricing/download/excel",
         title: "Download Single Pricing Report (Excel)",
-        description: "Same JSON request body as <code>/pricing/calculate</code>, but returns a formatted Excel workbook (with an embedded FMP vs Utility Price chart) instead of JSON.",
+        description: "Same JSON request body as <code>/pricing/calculate</code>, but returns a formatted Excel workbook (with an embedded FMP vs Utility Price chart) instead of JSON. <code>unit</code> carries through to the file: the summary, component and monthly blocks are written on that basis and their headers are labelled to match.",
         parameters: [
-          { name: "(request body)", type: "object", required: true, description: "Identical to the /pricing/calculate JSON body. display_mode controls whether values are shown as dollars or $/MWh." }
+          { name: "JSON body", type: "object", required: true, description: "The whole request body, same schema as <code>/pricing/calculate</code> including <code>unit</code>. There are no query parameters. The workbook reports rates on the basis you asked for." }
         ],
         examples: {
           python: `import requests
@@ -2303,9 +2465,8 @@ payload = {
     "load_zone": "AEP", "load_profile": "Commercial", "voltage": "Secondary",
     "curve_date": "2025-08-15", "start_date": "2025-09-01", "term_months": 12,
     "plc_kw": 150.0, "nspl_kw": 140.0,
-    "monthly_usage": [42000, 38000, 41000, 39000, 45000, 52000,
-                      58000, 57000, 50000, 43000, 40000, 44000],
-    "display_mode": "dollars"
+    "monthly_usage": [42, 38, 41, 39, 45, 52,
+                      58, 57, 50, 43, 40, 44]
 }
 
 response = requests.post(url, headers=headers, json=payload)
@@ -2324,9 +2485,8 @@ const payload = {
   load_zone: 'AEP', load_profile: 'Commercial', voltage: 'Secondary',
   curve_date: '2025-08-15', start_date: '2025-09-01', term_months: 12,
   plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                  58000, 57000, 50000, 43000, 40000, 44000],
-  display_mode: 'dollars'
+  monthly_usage: [42, 38, 41, 39, 45, 52,
+                  58, 57, 50, 43, 40, 44]
 };
 
 const response = await fetch('https://api.enerpricedata.com/pricing/download/excel', {
@@ -2354,9 +2514,8 @@ req.body = {
   load_zone: 'AEP', load_profile: 'Commercial', voltage: 'Secondary',
   curve_date: '2025-08-15', start_date: '2025-09-01', term_months: 12,
   plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                  58000, 57000, 50000, 43000, 40000, 44000],
-  display_mode: 'dollars'
+  monthly_usage: [42, 38, 41, 39, 45, 52,
+                  58, 57, 50, 43, 40, 44]
 }.to_json
 
 res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
@@ -2375,8 +2534,7 @@ end`,
     "load_zone": "AEP", "load_profile": "Commercial", "voltage": "Secondary",
     "curve_date": "2025-08-15", "start_date": "2025-09-01", "term_months": 12,
     "plc_kw": 150.0, "nspl_kw": 140.0,
-    "monthly_usage": [42000,38000,41000,39000,45000,52000,58000,57000,50000,43000,40000,44000],
-    "display_mode": "dollars"
+    "monthly_usage": [42,38,41,39,45,52,58,57,50,43,40,44]
   }' \
   -o "pricing_report_PJM_2025-09-01.xlsx"`
         }
@@ -2385,9 +2543,9 @@ end`,
         method: "POST",
         url: "/pricing/download/csv",
         title: "Download Single Pricing Report (CSV)",
-        description: "Same JSON request body as <code>/pricing/calculate</code>; returns a CSV with three stacked sections: Summary, Component Breakdown, and Monthly Breakdown.",
+        description: "Same JSON request body as <code>/pricing/calculate</code>, <code>unit</code> included; returns a CSV with three stacked sections: Summary, Component Breakdown, and Monthly Breakdown, all written on the basis you asked for.",
         parameters: [
-          { name: "(request body)", type: "object", required: true, description: "Identical to the /pricing/calculate JSON body." }
+          { name: "JSON body", type: "object", required: true, description: "The whole request body, same schema as <code>/pricing/calculate</code> including <code>unit</code>. There are no query parameters." }
         ],
         examples: {
           python: `import requests
@@ -2400,8 +2558,8 @@ payload = {
     "load_zone": "AEP", "load_profile": "Commercial", "voltage": "Secondary",
     "curve_date": "2025-08-15", "start_date": "2025-09-01", "term_months": 12,
     "plc_kw": 150.0, "nspl_kw": 140.0,
-    "monthly_usage": [42000, 38000, 41000, 39000, 45000, 52000,
-                      58000, 57000, 50000, 43000, 40000, 44000]
+    "monthly_usage": [42, 38, 41, 39, 45, 52,
+                      58, 57, 50, 43, 40, 44]
 }
 
 response = requests.post(url, headers=headers, json=payload)
@@ -2420,8 +2578,8 @@ const payload = {
   load_zone: 'AEP', load_profile: 'Commercial', voltage: 'Secondary',
   curve_date: '2025-08-15', start_date: '2025-09-01', term_months: 12,
   plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                  58000, 57000, 50000, 43000, 40000, 44000]
+  monthly_usage: [42, 38, 41, 39, 45, 52,
+                  58, 57, 50, 43, 40, 44]
 };
 
 const response = await fetch('https://api.enerpricedata.com/pricing/download/csv', {
@@ -2444,8 +2602,8 @@ req.body = {
   load_zone: 'AEP', load_profile: 'Commercial', voltage: 'Secondary',
   curve_date: '2025-08-15', start_date: '2025-09-01', term_months: 12,
   plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42000, 38000, 41000, 39000, 45000, 52000,
-                  58000, 57000, 50000, 43000, 40000, 44000]
+  monthly_usage: [42, 38, 41, 39, 45, 52,
+                  58, 57, 50, 43, 40, 44]
 }.to_json
 
 res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
@@ -2459,508 +2617,362 @@ puts "Saved CSV"`,
     "load_zone": "AEP", "load_profile": "Commercial", "voltage": "Secondary",
     "curve_date": "2025-08-15", "start_date": "2025-09-01", "term_months": 12,
     "plc_kw": 150.0, "nspl_kw": 140.0,
-    "monthly_usage": [42000,38000,41000,39000,45000,52000,58000,57000,50000,43000,40000,44000]
+    "monthly_usage": [42,38,41,39,45,52,58,57,50,43,40,44]
   }' \
   -o "pricing_report_PJM_2025-09-01.csv"`
         }
       },
-      {
-        method: "GET",
-        url: "/pricing/batch-template",
-        title: "Download Batch Template (Excel)",
-        description: "Download the empty Excel template for batch pricing, one row per account. Fill it in and submit it to /pricing/batch-upload.",
-        parameters: [],
-        examples: {
-          python: `import requests
-
-url = "https://api.enerpricedata.com/pricing/batch-template"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers)
-
-if response.status_code == 200:
-    with open("batch_pricing_template.xlsx", "wb") as f:
-        f.write(response.content)
-    print("Saved as 'batch_pricing_template.xlsx'")
-else:
-    print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
-
-const response = await fetch('https://api.enerpricedata.com/pricing/batch-template', {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync('batch_pricing_template.xlsx', buffer);
-console.log('Saved template');`,
-          ruby: `require 'net/http'
-require 'uri'
-
-uri = URI('https://api.enerpricedata.com/pricing/batch-template')
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-File.binwrite("batch_pricing_template.xlsx", res.body)
-puts "Saved template"`,
-          curl: `curl -G "https://api.enerpricedata.com/pricing/batch-template" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -o "batch_pricing_template.xlsx"`
-        }
-      },
-      {
-        method: "POST",
-        url: "/pricing/batch-upload",
-        title: "Upload Batch Pricing File",
-        description: "Upload a filled CSV/XLSX (one row per account, max 200 rows) as multipart form-data under the field name <code>file</code>. Validates rows, dispatches a background job, and returns a <code>batch_id</code> for polling. Daily cap: 600 rows; max 2 concurrent jobs.",
-        parameters: [
-          { name: "file", type: "file", required: true, description: "Multipart file upload (CSV or XLSX) of account rows" }
-        ],
-        examples: {
-          python: `import requests
-
-url = "https://api.enerpricedata.com/pricing/batch-upload"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-with open("batch_pricing_filled.xlsx", "rb") as f:
-    files = {"file": ("batch_pricing_filled.xlsx", f,
-             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
-    response = requests.post(url, headers=headers, files=files)
-
-if response.status_code == 200:
-    data = response.json()
-    print(f"batch_id: {data['batch_id']}")
-    print(f"{data['valid_rows']}/{data['total_rows']} rows accepted")
-    for err in data.get("validation_errors", []):
-        print("  ", err)
-else:
-    print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
-
-const form = new FormData();
-form.append('file', new Blob([fs.readFileSync('batch_pricing_filled.xlsx')]), 'batch_pricing_filled.xlsx');
-
-const response = await fetch('https://api.enerpricedata.com/pricing/batch-upload', {
-  method: 'POST',
-  headers: { 'X-API-Key': 'YOUR_API_KEY' },
-  body: form
-});
-
-const data = await response.json();
-console.log(\`batch_id: \${data.batch_id}, \${data.valid_rows}/\${data.total_rows} accepted\`);`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-uri = URI('https://api.enerpricedata.com/pricing/batch-upload')
-req = Net::HTTP::Post.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-form = [['file', File.open('batch_pricing_filled.xlsx')]]
-req.set_form(form, 'multipart/form-data')
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-data = JSON.parse(res.body)
-puts "batch_id: #{data['batch_id']}, #{data['valid_rows']}/#{data['total_rows']} accepted"`,
-          curl: `curl -X POST "https://api.enerpricedata.com/pricing/batch-upload" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -F "file=@batch_pricing_filled.xlsx"`
-        }
-      },
-      {
-        method: "GET",
-        url: "/pricing/batch-jobs",
-        title: "List Batch Jobs",
-        description: "List your recent batch pricing jobs, newest first.",
-        parameters: [
-          { name: "limit", type: "integer", required: false, description: "Max jobs to return, 1–100 (default 20)" }
-        ],
-        examples: {
-          python: `import requests
-
-url = "https://api.enerpricedata.com/pricing/batch-jobs"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers, params={"limit": 20})
-
-for job in response.json().get("jobs", []):
-    print(f"{job['batch_id']}  {job['status']:11}  {job['total_rows']} rows")`,
-          javascript: `const response = await fetch('https://api.enerpricedata.com/pricing/batch-jobs?limit=20', {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const { jobs } = await response.json();
-jobs.forEach(j => console.log(\`\${j.batch_id}  \${j.status}  \${j.total_rows} rows\`));`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-uri = URI('https://api.enerpricedata.com/pricing/batch-jobs')
-uri.query = URI.encode_www_form('limit' => 20)
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-JSON.parse(res.body)['jobs'].each { |j| puts "#{j['batch_id']}  #{j['status']}  #{j['total_rows']} rows" }`,
-          curl: `curl -G "https://api.enerpricedata.com/pricing/batch-jobs" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  --data-urlencode "limit=20"`
-        }
-      },
-      {
-        method: "GET",
-        url: "/pricing/batch-status/{batch_id}",
-        title: "Get Batch Status",
-        description: "Detailed status for one batch, including row-level progress and any per-row errors. Poll until <code>status</code> is <code>completed</code> (or <code>failed</code>).",
-        parameters: [
-          { name: "batch_id", type: "string", required: true, description: "Batch id returned by /pricing/batch-upload (path parameter)" }
-        ],
-        examples: {
-          python: `import requests
-
-batch_id = "a3f8d2e1c4b7"
-url = f"https://api.enerpricedata.com/pricing/batch-status/{batch_id}"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers)
-data = response.json()
-print(f"status: {data['status']}  ({data['completed']}/{data['total']} done, {data['errors_count']} errors)")`,
-          javascript: `const batchId = 'a3f8d2e1c4b7';
-const response = await fetch(\`https://api.enerpricedata.com/pricing/batch-status/\${batchId}\`, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const data = await response.json();
-console.log(\`status: \${data.status} (\${data.completed}/\${data.total} done)\`);`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-batch_id = "a3f8d2e1c4b7"
-uri = URI("https://api.enerpricedata.com/pricing/batch-status/#{batch_id}")
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-data = JSON.parse(res.body)
-puts "status: #{data['status']} (#{data['completed']}/#{data['total']} done)"`,
-          curl: `curl -G "https://api.enerpricedata.com/pricing/batch-status/a3f8d2e1c4b7" \
-  -H "X-API-Key: YOUR_API_KEY"`
-        }
-      },
-      {
-        method: "GET",
-        url: "/pricing/batch-download/{batch_id}",
-        title: "Download Batch Results",
-        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the result Excel, <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes), download it promptly. Only available once the batch <code>status</code> is <code>completed</code>. Admin keys receive the full component breakdown; standard keys receive a rolled-up workbook.",
-        parameters: [
-          { name: "batch_id", type: "string", required: true, description: "Batch id returned by /pricing/batch-upload (path parameter)" }
-        ],
-        examples: {
-          python: `import requests
-
-batch_id = "a3f8d2e1c4b7"
-url = f"https://api.enerpricedata.com/pricing/batch-download/{batch_id}"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers)
-if response.status_code == 200:
-    download_url = response.json()["download_url"]
-    # Follow the presigned URL to fetch the actual file
-    xlsx = requests.get(download_url)
-    with open(f"batch_pricing_results_{batch_id}.xlsx", "wb") as f:
-        f.write(xlsx.content)
-    print("Saved results workbook")
-else:
-    print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
-
-const batchId = 'a3f8d2e1c4b7';
-const response = await fetch(\`https://api.enerpricedata.com/pricing/batch-download/\${batchId}\`, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const { download_url } = await response.json();
-const file = await fetch(download_url);
-fs.writeFileSync(\`batch_pricing_results_\${batchId}.xlsx\`, Buffer.from(await file.arrayBuffer()));
-console.log('Saved results workbook');`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-batch_id = "a3f8d2e1c4b7"
-uri = URI("https://api.enerpricedata.com/pricing/batch-download/#{batch_id}")
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-download_url = JSON.parse(res.body)['download_url']
-file = Net::HTTP.get(URI(download_url))
-File.binwrite("batch_pricing_results_#{batch_id}.xlsx", file)
-puts "Saved results workbook"`,
-          curl: `# 1) Get the presigned URL
-curl -G "https://api.enerpricedata.com/pricing/batch-download/a3f8d2e1c4b7" \
-  -H "X-API-Key: YOUR_API_KEY"
-
-# 2) Then download the file from the returned "download_url":
-# curl -o "batch_pricing_results.xlsx" "<download_url from step 1>"`
-        }
-      }
     ]
   },
 
   "comparative-savings": {
     title: "Comparative Savings Analysis",
-    description: `Comparative Savings shows how much an account could save by switching from its current <em>Utility Price</em> to EnerPrice's <em>Fair Market Price (FMP)</em>. Upload a spreadsheet of meter reads (one workbook, up to <strong>200 rows</strong>); the engine prices each account and returns a per-account and summary savings workbook.<br/><br/>
-      It follows the same asynchronous pattern as batch pricing, <strong>template → upload → poll status → download</strong>, and jobs are retained for <strong>2 hours</strong>. Requires the <strong>Utility Price</strong> permission.
+    description: `Compare what an account pays its supplier against the utility's <em>Price to Compare</em>, and get the savings back as JSON. Send a portfolio of meter reads and the results come back in the response. Electricity only.<br/><br/>
+      <strong>Two calls, in this order.</strong> <code>GET /api/v1/utility-price/options</code> tells you which combinations you may price against, then <code>POST /api/v1/utility-price/comparative-analysis</code> prices your reads.<br/><br/>
+      <strong>Access:</strong> requires the <code>access_utility_price</code> permission. Both endpoints resolve the newest active price dataset themselves and report which one they used, so there is no operating date to pass.
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Workflow</p>
-        <ol class="list-decimal list-inside text-blue-800 dark:text-blue-200 space-y-1">
-          <li>Download the template: <code>GET /api/v1/utility-price/savings-template</code></li>
-          <li>Upload your filled file: <code>POST /api/v1/utility-price/savings-upload</code> → returns a <code>batch_id</code></li>
-          <li>Poll progress: <code>GET /api/v1/utility-price/savings-status/{batch_id}</code></li>
-          <li>Download results: <code>GET /api/v1/utility-price/savings-download/{batch_id}</code> → presigned Excel URL</li>
-        </ol>
+        <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
+        <table class="w-full text-sm text-left border-collapse">
+          <tbody>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">10 per endpoint</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Accounts per day</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">600, counted in <strong>accounts</strong>, not calls</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Concurrent requests</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">2</td></tr>
+            <tr><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per request</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
+          </tbody>
+        </table>
+        <p class="text-sm text-blue-800 dark:text-blue-200 mt-3">A <code>429</code> carries a <code>Retry-After</code> header. The daily quota is charged <strong>after</strong> validation, so a rejected request costs nothing. One call pricing 50 accounts spends 50 of the 600, so the ceiling is the same whether you send one big request or fifty small ones.</p>
       </div>`,
     endpoints: [
       {
         method: "GET",
-        url: "/api/v1/utility-price/savings-template",
-        title: "Download Savings Template (Excel)",
-        description: "Download the empty Excel template for a comparative-savings upload. Fill in one row per meter read.",
-        parameters: [],
+        url: "/api/v1/utility-price/options",
+        title: "List Priceable Combinations",
+        description: `Every State / Utility / Rate Class-Load Profile / Load Zone combination in the current price dataset, each with the range of months published for it. Call this first: <code>/comparative-analysis</code> rejects any read whose combination is not in this list, so this is where you get the exact strings to send.<br/><br/>
+          Both filters are optional and independent, and supplying both narrows to rows matching state <strong>and</strong> utility. They are exact matches, not searches, ignoring capitalisation and surrounding whitespace: <code>?utility_name=con edison</code> works, <code>?utility_name=edison</code> returns nothing. A filter that matches nothing returns <strong>200 with <code>count: 0</code></strong>, not a 404.<br/><br/>
+          Response is <code>{ operating_date, dataset_created_at, count, combinations }</code>. Each combination carries <code>state</code>, <code>utility_name</code>, <code>rate_class_load_profile</code>, <code>load_zone</code>, and a <code>coverage</code> object with <code>first_month</code> and <code>last_month</code> as <code>YYYY-MM</code>. Send those four strings back verbatim.<br/><br/>
+          The full list is small, roughly 634 rows. Fetch it once, cache it, and filter locally. There is deliberately no filter for rate class or load zone, because those are the long lists you want to search yourself. The set only changes when coverage expands, not on routine price refreshes, though the published months move with every refresh.`,
+        parameters: [
+          { name: "state", type: "string", required: false, description: "Filter to one state. Exact match, case-insensitive, surrounding whitespace ignored." },
+          { name: "utility_name", type: "string", required: false, description: "Filter to one utility. Exact match, case-insensitive, surrounding whitespace ignored." }
+        ],
         examples: {
           python: `import requests
 
-url = "https://api.enerpricedata.com/api/v1/utility-price/savings-template"
+url = "https://api.enerpricedata.com/api/v1/utility-price/options"
+
 headers = {"X-API-Key": "YOUR_API_KEY"}
 
-response = requests.get(url, headers=headers)
+params = {
+    "state": "MD",              # Optional
+    "utility_name": "",         # Optional
+}
+
+response = requests.get(url, headers=headers, params=params)
 
 if response.status_code == 200:
-    with open("comparative_savings_template.xlsx", "wb") as f:
-        f.write(response.content)
-    print("Saved as 'comparative_savings_template.xlsx'")
+    data = response.json()
+    print(f"Dataset {data['operating_date']}: {data['count']} combinations")
+    for combo in data["combinations"][:5]:
+        coverage = combo["coverage"]
+        print(f"  {combo['state']} | {combo['utility_name']} | "
+              f"{combo['rate_class_load_profile']} | {combo['load_zone']} "
+              f"({coverage['first_month']} to {coverage['last_month']})")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
+          javascript: `const url = new URL('https://api.enerpricedata.com/api/v1/utility-price/options');
+url.searchParams.append('state', 'MD');
 
-const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/savings-template', {
+const response = await fetch(url, {
   headers: { 'X-API-Key': 'YOUR_API_KEY' }
 });
 
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync('comparative_savings_template.xlsx', buffer);
-console.log('Saved template');`,
+if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+  return;
+}
+
+const data = await response.json();
+console.log(\`Dataset \${data.operating_date}: \${data.count} combinations\`);
+data.combinations.slice(0, 5).forEach(c => {
+  console.log(\`  \${c.state} | \${c.utility_name} | \${c.rate_class_load_profile} | \${c.load_zone} \` +
+              \`(\${c.coverage.first_month} to \${c.coverage.last_month})\`);
+});`,
           ruby: `require 'net/http'
 require 'uri'
+require 'json'
 
-uri = URI('https://api.enerpricedata.com/api/v1/utility-price/savings-template')
+uri = URI('https://api.enerpricedata.com/api/v1/utility-price/options')
+uri.query = URI.encode_www_form('state' => 'MD')
+
 req = Net::HTTP::Get.new(uri)
 req['X-API-Key'] = 'YOUR_API_KEY'
 
 res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-File.binwrite("comparative_savings_template.xlsx", res.body)
-puts "Saved template"`,
-          curl: `curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-template" \
+
+if res.is_a?(Net::HTTPSuccess)
+  data = JSON.parse(res.body)
+  puts "Dataset #{data['operating_date']}: #{data['count']} combinations"
+  data['combinations'].first(5).each do |c|
+    puts "  #{c['state']} | #{c['utility_name']} | #{c['rate_class_load_profile']} | #{c['load_zone']}"
+  end
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -G "https://api.enerpricedata.com/api/v1/utility-price/options" \
   -H "X-API-Key: YOUR_API_KEY" \
-  -o "comparative_savings_template.xlsx"`
+  --data-urlencode "state=MD"`
         }
       },
       {
         method: "POST",
-        url: "/api/v1/utility-price/savings-upload",
-        title: "Upload Meter Reads",
-        description: "Upload the filled Excel file (up to 200 rows) as multipart form-data under the field name <code>file</code>. Validates rows, starts a background job, and returns a <code>batch_id</code>. A utility-price dataset must be available (else <code>404</code>).",
+        url: "/api/v1/utility-price/comparative-analysis",
+        title: "Analyze a Portfolio",
+        description: `Send a <code>reads</code> array, one object per meter read, 1 to 200 of them, and get per-read prices and per-account rollups back. <strong>Reads sharing an <code>account_id</code> are analyzed together as one account</strong>, so a year of monthly bills for one meter is twelve reads and one account.<br/><br/>
+          Matching on <code>state</code>, <code>utility_name</code>, <code>rate_class_load_profile</code> and <code>load_zone</code> ignores capitalisation and extra internal spaces, so values copied out of <code>/options</code> survive being mangled in transit. It will not guess between genuinely different values: <code>Residential Service (R)</code> and <code>Residential Service (RL)</code> are different rate classes at different prices, so a near-miss returns a <code>Did you mean "..."?</code> error rather than a price.<br/><br/>
+          <strong>Response:</strong> <code>{ operating_date, accounts, warnings }</code>, one account entry per distinct <code>account_id</code>.
+          <div class="mt-4 bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-gray-100 mb-3">One account, in full</p>
+            <div class="overflow-x-auto">
+<pre class="text-xs leading-relaxed font-mono text-gray-200 whitespace-pre">{
+  "account_id": "ACCT-1001",
+  "header": {                                  the values we resolved, canonically spelled
+    "account_id": "ACCT-1001",
+    "commodity": "Electric",
+    "state": "MD",
+    "utility": "Baltimore Gas &amp; Electric",     you send utility_name, we return utility
+    "rate_class_load_profile": "Residential Service (R)",
+    "load_zone": "BGE"                         the zone actually priced on
+  },
+  "term_start": "2026-01-15",                  earliest and latest dates across the reads
+  "term_end":   "2026-02-14",
+  "supported": true,                           false = this account could not be priced
+  "reason": null,                              why, when supported is false
+  "price_unit": "$/kWh",
+  "rows": [                                    one per read, in the order you sent them
+    {
+      "service_start": "2026-01-15",
+      "service_end":   "2026-02-14",
+      "usage": 12500.0,                        kWh
+      "convention": "READ_START",
+      "utility_price": 0.12101,                what the utility would charge
+      "ffr": 0.089,                            the supply_price you sent
+      "savings_per_kwh": 0.03201,              utility_price - ffr
+      "savings_pct": 0.26452,                  a fraction: 0.26452 = 26.5%
+      "savings_dollar": 400.13,                savings_per_kwh x usage
+      "priced": true                           false = no published price for these dates
+    }
+  ],
+  "summary": {                                 usage-weighted across the account
+    "total_usage": 12500.0,
+    "avg_utility_price": 0.12101,
+    "avg_ffr": 0.089,
+    "avg_savings_per_kwh": 0.03201,
+    "avg_savings_pct": 0.26452,
+    "total_savings_dollar": 400.13,
+    "priced_count": 1,
+    "unpriced_count": 0
+  }
+}</pre>
+            </div>
+          </div>
+          <div class="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <ul class="list-disc list-inside text-sm text-amber-800 dark:text-amber-200 space-y-2">
+              <li><strong>Leave out <code>load_zone</code> and one gets picked for you</strong> &mdash; the only zone, or the alphabetically first. Seventeen combinations have several (Con Edison NY has <code>ZONE H</code>, <code>I</code> and <code>J</code>) and they price differently, so check <code>header.load_zone</code> to see which one you got.</li>
+              <li><strong>A read with no <code>supply_price</code> still prices.</strong> You get <code>utility_price</code>, and the three savings fields come back <code>null</code>. At the account level <code>total_savings_dollar</code> is then <code>0.0</code>, not <code>null</code>.</li>
+              <li><strong><code>priced: false</code> and <code>supported: false</code> are not errors</strong>, and both arrive with <code>200</code>. The first means those dates have no published price. The second means the whole account could not be priced, and <code>reason</code> says why. Other accounts are unaffected either way.</li>
+              <li><strong>The savings averages cover fewer reads than <code>avg_utility_price</code></strong> in a mixed account. They only count priced reads that carry a <code>supply_price</code>, so the percentage's top and bottom describe the same reads.</li>
+            </ul>
+            <p class="text-sm text-amber-800 dark:text-amber-200 mt-3"><code>warnings</code> is advisory and arrives on a successful <code>200</code>. Today it carries the <code>LOAD_WEIGHTED</code> usage-mismatch note.</p>
+          </div>
+          <div class="mt-4 bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <p class="font-semibold text-gray-900 dark:text-gray-100 mb-2">PTC Billing Convention</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">Utility prices can change partway through a meter read. <code>convention</code> tells the engine which month's price to apply. Required on every read.</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr class="border-b dark:border-gray-600">
+                    <th class="py-2 px-3 text-gray-900 dark:text-gray-100">Value</th>
+                    <th class="py-2 px-3 text-gray-900 dark:text-gray-100">How the read is priced</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b dark:border-gray-700"><td class="py-2 px-3 text-gray-700 dark:text-gray-300"><code>READ_START</code></td><td class="py-2 px-3 text-gray-600 dark:text-gray-300">The entire read at the PTC in effect on the <strong>service start date</strong>.</td></tr>
+                  <tr class="border-b dark:border-gray-700"><td class="py-2 px-3 text-gray-700 dark:text-gray-300"><code>READ_END</code></td><td class="py-2 px-3 text-gray-600 dark:text-gray-300">The entire read at the PTC in effect on the <strong>service end date</strong>.</td></tr>
+                  <tr class="border-b dark:border-gray-700"><td class="py-2 px-3 text-gray-700 dark:text-gray-300"><code>DAY_WEIGHTED</code></td><td class="py-2 px-3 text-gray-600 dark:text-gray-300">Blends the two months' PTCs by the <strong>number of days</strong> the read spends in each. Derived from your dates, nothing extra to send.</td></tr>
+                  <tr><td class="py-2 px-3 text-gray-700 dark:text-gray-300"><code>LOAD_WEIGHTED</code></td><td class="py-2 px-3 text-gray-600 dark:text-gray-300">Blends them by the <strong>usage you assign</strong> to each month. Requires <code>usage_start</code> and <code>usage_end</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">For <code>LOAD_WEIGHTED</code>, <code>usage</code> is derived as <code>usage_start + usage_end</code>; send a <code>usage</code> that disagrees and the split wins, with a warning, and the request still succeeds.</p>
+          </div>`,
         parameters: [
-          { name: "file", type: "file", required: true, description: "Multipart Excel upload of meter reads" }
+          { name: "reads", type: "object[]", required: true, description: "1 to 200 meter reads. Fields below are per read." },
+          { name: "reads[].account_id", type: "string", required: true, description: "Your identifier for the account. Must not be blank or whitespace-only. Reads sharing this value are analyzed as one account." },
+          { name: "reads[].state", type: "string", required: true, description: "State, exactly as listed by /options" },
+          { name: "reads[].utility_name", type: "string", required: true, description: "Utility, exactly as listed by /options" },
+          { name: "reads[].rate_class_load_profile", type: "string", required: true, description: "Rate class / load profile, exactly as listed by /options" },
+          { name: "reads[].load_zone", type: "string", required: false, description: "Load zone. Omit it and one is chosen for you: the only zone, or the alphabetically first. Always read header.load_zone back." },
+          { name: "reads[].service_start", type: "date", required: true, description: "Start of the service period (YYYY-MM-DD)" },
+          { name: "reads[].service_end", type: "date", required: true, description: "End of the service period (YYYY-MM-DD). Must be strictly after service_start." },
+          { name: "reads[].convention", type: "string", required: true, description: "How a read spanning two calendar months is split: READ_START (all usage at the starting month), READ_END (all at the ending month), DAY_WEIGHTED (by days in each month), or LOAD_WEIGHTED (by the usage you report per month)." },
+          { name: "reads[].usage", type: "float", required: false, description: "Usage in kWh for the period. Required for every convention except LOAD_WEIGHTED, which derives it as usage_start + usage_end." },
+          { name: "reads[].usage_start", type: "float", required: false, description: "Required for LOAD_WEIGHTED only. Usage falling in the starting month." },
+          { name: "reads[].usage_end", type: "float", required: false, description: "Required for LOAD_WEIGHTED only. Usage falling in the ending month. Send a usage that disagrees with the split and the split wins, with a warning; the request still succeeds." },
+          { name: "reads[].supply_price", type: "float", required: false, description: "The $/kWh you currently pay. Omit it and the utility price is still returned, but savings are not computed for that read." }
         ],
         examples: {
           python: `import requests
 
-url = "https://api.enerpricedata.com/api/v1/utility-price/savings-upload"
-headers = {"X-API-Key": "YOUR_API_KEY"}
+url = "https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis"
 
-with open("comparative_savings_filled.xlsx", "rb") as f:
-    files = {"file": ("comparative_savings_filled.xlsx", f,
-             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
-    response = requests.post(url, headers=headers, files=files)
+headers = {"X-API-Key": "YOUR_API_KEY", "Content-Type": "application/json"}
+
+payload = {
+    "reads": [
+        {
+            "account_id": "ACCT-1001",
+            "state": "MD",
+            "utility_name": "Baltimore Gas & Electric",
+            "rate_class_load_profile": "Residential Service (R)",
+            "load_zone": "BGE",
+            "service_start": "2026-01-15",
+            "service_end": "2026-02-14",
+            "convention": "READ_START",
+            "usage": 12500,             # kWh for the period
+            "supply_price": 0.089       # $/kWh you pay today; optional
+        }
+    ]
+}
+
+response = requests.post(url, headers=headers, json=payload, timeout=120)
 
 if response.status_code == 200:
     data = response.json()
-    print(f"batch_id: {data['batch_id']}  ({data['accepted_reads']} reads accepted)")
-    for err in data.get("errors", []):
-        print("  ", err)
+    for account in data["accounts"]:
+        if not account["supported"]:
+            print(f"{account['account_id']}: not priced ({account['reason']})")
+            continue
+        summary = account["summary"]
+        print(f"{account['account_id']} "
+              f"(zone used: {account['header']['load_zone']}): "
+              f"utility {summary['avg_utility_price']} {account['price_unit']}, "
+              f"savings {summary['total_savings_dollar']} total, "
+              f"{summary['unpriced_count']} reads unpriced")
+elif response.status_code == 422:
+    # Two shapes: a framework list for schema errors, or {"errors": [...]}
+    # for rule errors. Handle both.
+    detail = response.json()["detail"]
+    problems = detail["errors"] if isinstance(detail, dict) else detail
+    for problem in problems:
+        print(f"Rejected: {problem}")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
-
-const form = new FormData();
-form.append('file', new Blob([fs.readFileSync('comparative_savings_filled.xlsx')]), 'comparative_savings_filled.xlsx');
-
-const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/savings-upload', {
+          javascript: `const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis', {
   method: 'POST',
-  headers: { 'X-API-Key': 'YOUR_API_KEY' },
-  body: form
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    reads: [
+      {
+        account_id: 'ACCT-1001',
+        state: 'MD',
+        utility_name: 'Baltimore Gas & Electric',
+        rate_class_load_profile: 'Residential Service (R)',
+        load_zone: 'BGE',
+        service_start: '2026-01-15',
+        service_end: '2026-02-14',
+        convention: 'READ_START',
+        usage: 12500,             // kWh for the period
+        supply_price: 0.089       // $/kWh you pay today; optional
+      }
+    ]
+  })
 });
 
-const data = await response.json();
-console.log(\`batch_id: \${data.batch_id} (\${data.accepted_reads} reads accepted)\`);`,
+if (response.status === 422) {
+  // Schema errors arrive as a list, rule errors as { errors: [...] }.
+  const { detail } = await response.json();
+  const problems = Array.isArray(detail) ? detail : detail.errors;
+  problems.forEach(p => console.error('Rejected:', p));
+} else if (!response.ok) {
+  console.error(\`Error \${response.status}: \${await response.text()}\`);
+} else {
+  const data = await response.json();
+  data.accounts.forEach(a => {
+    if (!a.supported) {
+      console.log(\`\${a.account_id}: not priced (\${a.reason})\`);
+      return;
+    }
+    console.log(\`\${a.account_id} (zone used: \${a.header.load_zone}): \` +
+                \`utility \${a.summary.avg_utility_price} \${a.price_unit}, \` +
+                \`savings \${a.summary.total_savings_dollar} total\`);
+  });
+}`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
 
-uri = URI('https://api.enerpricedata.com/api/v1/utility-price/savings-upload')
-req = Net::HTTP::Post.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-req.set_form([['file', File.open('comparative_savings_filled.xlsx')]], 'multipart/form-data')
+uri = URI('https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis')
+req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json', 'X-API-Key' => 'YOUR_API_KEY')
+req.body = {
+  reads: [
+    {
+      account_id: 'ACCT-1001',
+      state: 'MD',
+      utility_name: 'Baltimore Gas & Electric',
+      rate_class_load_profile: 'Residential Service (R)',
+      load_zone: 'BGE',
+      service_start: '2026-01-15',
+      service_end: '2026-02-14',
+      convention: 'READ_START',
+      usage: 12500,
+      supply_price: 0.089
+    }
+  ]
+}.to_json
 
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-data = JSON.parse(res.body)
-puts "batch_id: #{data['batch_id']} (#{data['accepted_reads']} reads accepted)"`,
-          curl: `curl -X POST "https://api.enerpricedata.com/api/v1/utility-price/savings-upload" \
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, read_timeout: 120) { |http| http.request(req) }
+
+case res.code
+when '200'
+  JSON.parse(res.body)['accounts'].each do |a|
+    unless a['supported']
+      puts "#{a['account_id']}: not priced (#{a['reason']})"
+      next
+    end
+    s = a['summary']
+    puts "#{a['account_id']} (zone used: #{a['header']['load_zone']}): " \
+         "utility #{s['avg_utility_price']} #{a['price_unit']}, " \
+         "savings #{s['total_savings_dollar']} total"
+  end
+when '422'
+  detail = JSON.parse(res.body)['detail']
+  problems = detail.is_a?(Array) ? detail : detail['errors']
+  problems.each { |p| puts "Rejected: #{p}" }
+else
+  puts "Error #{res.code}: #{res.body}"
+end`,
+          curl: `curl -X POST "https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis" \
   -H "X-API-Key: YOUR_API_KEY" \
-  -F "file=@comparative_savings_filled.xlsx"`
-        }
-      },
+  -H "Content-Type: application/json" \
+  -d '{
+    "reads": [
       {
-        method: "GET",
-        url: "/api/v1/utility-price/savings-jobs",
-        title: "List Savings Jobs",
-        description: "List your recent comparative-savings jobs, newest first.",
-        parameters: [
-          { name: "limit", type: "integer", required: false, description: "Max jobs to return, 1–100 (default 20)" }
-        ],
-        examples: {
-          python: `import requests
-
-url = "https://api.enerpricedata.com/api/v1/utility-price/savings-jobs"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers, params={"limit": 20})
-
-for job in response.json().get("jobs", []):
-    print(f"{job['batch_id']}  {job['status']:11}  {job['accepted_reads']} reads")`,
-          javascript: `const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/savings-jobs?limit=20', {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const { jobs } = await response.json();
-jobs.forEach(j => console.log(\`\${j.batch_id}  \${j.status}  \${j.accepted_reads} reads\`));`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-uri = URI('https://api.enerpricedata.com/api/v1/utility-price/savings-jobs')
-uri.query = URI.encode_www_form('limit' => 20)
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-JSON.parse(res.body)['jobs'].each { |j| puts "#{j['batch_id']}  #{j['status']}  #{j['accepted_reads']} reads" }`,
-          curl: `curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-jobs" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  --data-urlencode "limit=20"`
-        }
-      },
-      {
-        method: "GET",
-        url: "/api/v1/utility-price/savings-status/{batch_id}",
-        title: "Get Savings Status",
-        description: "Check progress of a savings job. Once complete, <code>accounts</code> is populated with per-account results, each with a <code>header</code>, priced <code>rows</code>, a <code>summary</code>, and a <code>price_unit</code> (<code>$/kWh</code> for power, <code>$/MMBtu</code> for gas).",
-        parameters: [
-          { name: "batch_id", type: "string", required: true, description: "Batch id returned by /savings-upload (path parameter)" }
-        ],
-        examples: {
-          python: `import requests
-
-batch_id = "a3f8d2e1c4b7"
-url = f"https://api.enerpricedata.com/api/v1/utility-price/savings-status/{batch_id}"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers)
-data = response.json()
-print(f"status: {data['status']}  ({len(data['accounts'])} accounts)")
-for acct in data["accounts"]:
-    s = acct.get("summary") or {}
-    print(f"  {acct['account_id']}: avg savings {s.get('avg_savings_pct')}%  total \${s.get('total_savings_dollar')}")`,
-          javascript: `const batchId = 'a3f8d2e1c4b7';
-const response = await fetch(\`https://api.enerpricedata.com/api/v1/utility-price/savings-status/\${batchId}\`, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const data = await response.json();
-console.log(\`status: \${data.status} (\${data.accounts.length} accounts)\`);`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-batch_id = "a3f8d2e1c4b7"
-uri = URI("https://api.enerpricedata.com/api/v1/utility-price/savings-status/#{batch_id}")
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-data = JSON.parse(res.body)
-puts "status: #{data['status']} (#{data['accounts'].size} accounts)"`,
-          curl: `curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-status/a3f8d2e1c4b7" \
-  -H "X-API-Key: YOUR_API_KEY"`
-        }
-      },
-      {
-        method: "GET",
-        url: "/api/v1/utility-price/savings-download/{batch_id}",
-        title: "Download Savings Results",
-        description: "Returns a JSON body with a <strong>presigned S3 URL</strong> to the results Excel, <code>{ download_url, expires_in }</code>. The URL is short-lived (<code>expires_in</code> is <strong>900</strong> seconds / 15 minutes), download it promptly. Only available once the job <code>status</code> is <code>completed</code>.",
-        parameters: [
-          { name: "batch_id", type: "string", required: true, description: "Batch id returned by /savings-upload (path parameter)" }
-        ],
-        examples: {
-          python: `import requests
-
-batch_id = "a3f8d2e1c4b7"
-url = f"https://api.enerpricedata.com/api/v1/utility-price/savings-download/{batch_id}"
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-response = requests.get(url, headers=headers)
-if response.status_code == 200:
-    download_url = response.json()["download_url"]
-    xlsx = requests.get(download_url)
-    with open(f"comparative_savings_{batch_id}.xlsx", "wb") as f:
-        f.write(xlsx.content)
-    print("Saved results workbook")
-else:
-    print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const fs = require('fs');
-
-const batchId = 'a3f8d2e1c4b7';
-const response = await fetch(\`https://api.enerpricedata.com/api/v1/utility-price/savings-download/\${batchId}\`, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-const { download_url } = await response.json();
-const file = await fetch(download_url);
-fs.writeFileSync(\`comparative_savings_\${batchId}.xlsx\`, Buffer.from(await file.arrayBuffer()));
-console.log('Saved results workbook');`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-batch_id = "a3f8d2e1c4b7"
-uri = URI("https://api.enerpricedata.com/api/v1/utility-price/savings-download/#{batch_id}")
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-download_url = JSON.parse(res.body)['download_url']
-file = Net::HTTP.get(URI(download_url))
-File.binwrite("comparative_savings_#{batch_id}.xlsx", file)
-puts "Saved results workbook"`,
-          curl: `# 1) Get the presigned URL
-curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-download/a3f8d2e1c4b7" \
-  -H "X-API-Key: YOUR_API_KEY"
-
-# 2) Then download the file from the returned "download_url":
-# curl -o "comparative_savings.xlsx" "<download_url from step 1>"`
+        "account_id": "ACCT-1001",
+        "state": "MD",
+        "utility_name": "Baltimore Gas & Electric",
+        "rate_class_load_profile": "Residential Service (R)",
+        "load_zone": "BGE",
+        "service_start": "2026-01-15",
+        "service_end": "2026-02-14",
+        "convention": "READ_START",
+        "usage": 12500,
+        "supply_price": 0.089
+      }
+    ]
+  }'`
         }
       }
     ],
@@ -2971,30 +2983,30 @@ curl -G "https://api.enerpricedata.com/api/v1/utility-price/savings-download/a3f
           <table class="w-full text-sm text-left border-collapse">
             <thead>
               <tr class="border-b dark:border-gray-600">
-                <th class="py-2 px-3 font-large text-gray-900 dark:text-gray-100">Metric</th>
+                <th class="py-2 px-3 font-large text-gray-900 dark:text-gray-100">Field</th>
                 <th class="py-2 px-3 font-large text-gray-900 dark:text-gray-100">Formula</th>
               </tr>
             </thead>
             <tbody>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100">Savings (per unit)</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>Utility Price − Fair Market Price</code></td>
+                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100"><code>savings_per_kwh</code></td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>utility_price − ffr</code></td>
               </tr>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100">Savings (%)</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>(Utility Price − FMP) / Utility Price × 100</code></td>
+                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100"><code>savings_pct</code></td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>(utility_price − ffr) / utility_price</code>, as a <strong>fraction</strong>: <code>0.30</code> means 30%</td>
               </tr>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100">Total Savings ($)</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>(Utility Price − FMP) × Total Usage</code></td>
+                <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100"><code>savings_dollar</code></td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300"><code>savings_per_kwh × usage</code></td>
               </tr>
               <tr>
                 <td class="py-2 px-3 font-semibold text-gray-900 dark:text-gray-100">Sign convention</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Positive savings means the Fair Market Price is cheaper than the utility.</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Positive savings means your supply price beats the utility.</td>
               </tr>
             </tbody>
           </table>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Prices are expressed per unit, <code>$/kWh</code> for electricity and <code>$/MMBtu</code> for natural gas (see each account's <code>price_unit</code>).</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Prices are <code>$/kWh</code>; each account echoes this as <code>price_unit</code>.</p>
         </div>
       </div>
     `

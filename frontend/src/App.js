@@ -139,7 +139,7 @@ const ContentSection = ({ sectionId, data, selectedLanguage }) => {
                             {param.required ? 'Required' : 'Optional'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{param.description}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 prose-doc" dangerouslySetInnerHTML={{ __html: param.description }} />
                       </tr>
                     ))}
                   </tbody>
