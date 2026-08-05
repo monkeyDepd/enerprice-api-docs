@@ -2184,7 +2184,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
         title: "Get Pricing Options (cascading dropdowns)",
         description: "Discover the valid values for a pricing request. Call as you narrow ISO → State → Utility → Load Profile → Load Zone → Capacity Zone → Voltage; each response lists what is still available for the remaining fields.",
         parameters: [
-          { name: "iso", type: "string", required: true, description: "ISO region (PJM, ISONE, NYISO, ERCOT, MISO, SPP, CAISO)" },
+          { name: "iso", type: "string", required: true, description: "ISO region. Currently PJM only; additional ISOs are planned." },
           { name: "state", type: "string", required: false, description: "State filter" },
           { name: "utility_name", type: "string", required: false, description: "Utility name filter" },
           { name: "load_profile", type: "string", required: false, description: "Load profile filter" },
@@ -2246,7 +2246,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
         title: "Calculate Fair Market Price",
         description: "Run the Fair Price Engine for a single account. <strong>Send parameters as a JSON request body</strong> (not query string). Returns a full pricing report with a component breakdown, month-by-month detail, and the weighted-average <code>total_fr_price</code>, expressed in whichever <code>unit</code> you asked for. Provide <code>price_to_compare</code> to get a <code>delta</code> vs your current price, on that same basis.",
         parameters: [
-          { name: "iso", type: "string", required: true, description: "ISO region (PJM, ISONE, NYISO, ERCOT, MISO, SPP, CAISO)" },
+          { name: "iso", type: "string", required: true, description: "ISO region. Currently PJM only; additional ISOs are planned." },
           { name: "state", type: "string", required: true, description: "Account state" },
           { name: "utility_name", type: "string", required: true, description: "Utility name" },
           { name: "load_zone", type: "string", required: true, description: "Load zone" },
