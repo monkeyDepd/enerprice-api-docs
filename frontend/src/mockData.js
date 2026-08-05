@@ -5,7 +5,7 @@ import apiImage from './assets/api.png';
 export const mockApiData = {
   home: {
     title: "EnerPrice API Documentation",
-    description: "Welcome to the Comprehensive EnerPrice API documentation, your gateway to accessing futures Energy Futures data, Ancillary and Uplift charges, REC credits and portfolio standards, Utility Pricing data, and detailed rate structures through our powerful FAST API.",
+    description: "Welcome to the Comprehensive EnerPrice API documentation, your gateway to accessing Energy Futures data, Ancillary and Uplift charges, REC credits and portfolio standards, Utility Pricing data, and detailed rate structures through our powerful API.",
     content: `
       <div class="space-y-6">
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
@@ -20,6 +20,9 @@ export const mockApiData = {
           >
             app.enerpricedata.com
           </a>
+        </p>
+        <p class="text-sm text-blue-800 dark:text-blue-200 mt-3">
+          All dataset date parameters use <strong>start_operating_date</strong>, which refers to the <strong>Publication Date</strong> of the dataset.
         </p>
         </div>
         
@@ -47,20 +50,20 @@ export const mockApiData = {
             </thead>
             <tbody>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Energy Curves</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Uploaded every Morning</td>
+                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Electricity &amp; Natural Gas Futures</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Updated daily by 9:00 AM ET, reflecting the prior business day's close.</td>
               </tr>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Ancillary/Uplift Curves</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Uploaded every Friday and at month end</td>
+                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Ancillary/Uplift</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated on the first business day of each month. The NYISO dataset is additionally updated on the first business day of each week.</td>
               </tr>
               <tr class="border-b dark:border-gray-600">
-                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">REC Data</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Uploaded at month end</td>
+                <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">REC/RPS</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated on the first business day of each month.</td>
               </tr>
               <tr>
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">PTC Files</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Uploaded prior to the third week of each month</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday.</td>
               </tr>
             </tbody>
           </table>
@@ -201,7 +204,7 @@ end`,
         method: "GET",
         url: "/datasets/download/energy-futures/csv",
         title: "Download Energy Futures (CSV)",
-        description: "Download energy futures data in CSV format. Supports single date or date range downloads.",
+        description: "Download energy futures data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
@@ -317,7 +320,7 @@ end`,
         method: "GET",
         url: "/datasets/download/energy-futures/json",
         title: "Download Energy Futures (JSON)",
-        description: "Download energy futures data as JSON with pagination support.",
+        description: "Download energy futures data as JSON with pagination support. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
             { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
             { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
@@ -330,6 +333,7 @@ end`,
         ],
         examples: {
           python: `import requests
+import json
 
 # Get Energy Futures JSON Data
 url = "https://api.enerpricedata.com/datasets/download/energy-futures/json"
@@ -349,7 +353,7 @@ params = {
     "limit": 100                                 # Optional: pagination limit (max 1000)
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 start_op_date = params["start_operating_date"]
@@ -429,67 +433,8 @@ end`,
 
   "natgas-energy-futures": {
     title: "Natural Gas Energy Futures Data",
-    description: "Access Natural Gas <strong>futures</strong> (forward curve) pricing: monthly baseload gas prices published as a single combined dataset covering all settlement points. Download in Excel, CSV, or JSON.<br/><br/><strong>Data availability:</strong> curves are published on business days.<br/><br/><strong>Settlement points:</strong> valid <code>settlement_point</code> values are returned by the settlement points endpoint below. Values are <strong>case sensitive</strong> and must be passed exactly as returned.",
+    description: "Access Natural Gas <strong>futures</strong> (forward curve) pricing: monthly baseload gas prices published as a single combined dataset covering all settlement points. Download in Excel, CSV, or JSON.<br/><br/><strong>Data availability:</strong> curves are published on business days.",
     endpoints: [
-      {
-        method: "GET",
-        url: "/graph/api/v1/naturalgas-futures/settlement-points",
-        title: "List Settlement Points",
-        description: "Returns the settlement points available for a given curve publication date, as <code>{ success, settlement_points }</code> with the names sorted alphabetically. Use this to discover valid <code>settlement_point</code> filter values before calling the download endpoints. Values are <strong>case sensitive</strong>: pass them through exactly as returned. A publication date with no curve returns <code>404</code>.",
-        parameters: [
-          { name: "operating_date", type: "date", required: true, description: "Curve publication date to list settlement points for (YYYY-MM-DD)" }
-        ],
-        examples: {
-          python: `import requests
-
-url = "https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points"
-
-headers = {"X-API-Key": "YOUR_API_KEY"}
-
-params = {"operating_date": "2025-08-15"}   # Required: curve publication date
-
-response = requests.get(url, headers=headers, params=params)
-
-if response.status_code == 200:
-    print(response.json()["settlement_points"])
-else:
-    print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const url = new URL('https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points');
-url.searchParams.append('operating_date', '2025-08-15');
-
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
-
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
-}
-
-const data = await response.json();
-console.log(data.settlement_points);`,
-          ruby: `require 'net/http'
-require 'uri'
-require 'json'
-
-uri = URI('https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points')
-uri.query = URI.encode_www_form('operating_date' => '2025-08-15')
-
-req = Net::HTTP::Get.new(uri)
-req['X-API-Key'] = 'YOUR_API_KEY'
-
-res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-
-if res.is_a?(Net::HTTPSuccess)
-  puts JSON.parse(res.body)['settlement_points']
-else
-  puts "Error #{res.code}: #{res.body}"
-end`,
-          curl: `curl -G "https://api.enerpricedata.com/graph/api/v1/naturalgas-futures/settlement-points" \\
-  -H "X-API-Key: YOUR_API_KEY" \\
-  --data-urlencode "operating_date=2025-08-15"`
-        }
-      },
       {
         method: "GET",
         url: "/datasets/download/naturalgas-futures",
@@ -497,7 +442,7 @@ end`,
         description: "Download the natural gas futures curve for a publication date as an Excel workbook.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; must be passed exactly. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" }
         ],
@@ -579,7 +524,7 @@ end`,
         description: "Download the natural gas futures curve for a publication date as a CSV file.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; must be passed exactly. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" }
         ],
@@ -661,7 +606,7 @@ end`,
         description: "Returns the natural gas futures curve as JSON. Set <code>raw=true</code> for an inline, paginated JSON response of the form <code>{ data, total, page, size }</code>.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication date of the curve (YYYY-MM-DD)" },
-          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; use a value returned by the settlement points endpoint. Omit for all points." },
+          { name: "settlement_point", type: "string", required: false, description: "Filter to a single settlement point. Case sensitive; must be passed exactly. Omit for all points." },
           { name: "start_date", type: "date", required: false, description: "Curve (delivery) start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "Curve (delivery) end date filter (YYYY-MM-DD)" },
           { name: "raw", type: "boolean", required: false, description: "If true, returns inline paginated JSON instead of a file download" },
@@ -806,7 +751,7 @@ params = {
     "end_date": "2030-09-01"                     # Optional: filter end
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 end_op_date = params.get("end_operating_date", params["start_operating_date"])
@@ -870,10 +815,10 @@ request['X-API-Key'] = 'YOUR_API_KEY'`
         method: "GET",
         url: "/datasets/download/ancillary-uplift/csv",
         title: "Download Ancillary Uplift Curves (CSV)",
-        description: "Download energy futures data in CSV format. Supports single date or date range downloads.",
+        description: "Download ancillary uplift data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
-          { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
+          { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" }
         ],
@@ -893,7 +838,7 @@ params = {
     "start_date": "2025-08-01",                  # Optional: filter start
     "end_date": "2030-09-01"                     # Optional: filter end
 }
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 start_op_date = params["start_operating_date"]
@@ -982,7 +927,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/ancillary-uplift/cs
         method: "GET",
         url: "/datasets/download/ancillary-uplift/json",
         title: "Download Ancillary Uplift  (JSON)",
-        description: "Download ancillary uplift data as JSON with pagination support.",
+        description: "Download ancillary uplift data as JSON with pagination support. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
@@ -1123,7 +1068,7 @@ params = {
     "end_date": "2030-09-01"                     # Optional: filter end
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 end_op_date = params.get("end_operating_date", params["start_operating_date"])
@@ -1195,7 +1140,7 @@ end`,
         method: "GET",
         url: "/datasets/download/rec-rps/csv",
         title: "Download REC/RPS Data (CSV)",
-        description: "Download REC/RPS data in CSV format.",
+        description: "Download REC/RPS data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
         { name: "start_operating_date", type: "date", required: true, description: "Start date for download" },
         { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
@@ -1214,7 +1159,7 @@ params = {
     "end_date": "2030-09-01"                     # Optional: filter end
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 start_op_date = params["start_operating_date"]
@@ -1286,7 +1231,7 @@ end`,
         method: "GET",
         url: "/datasets/download/rec-rps/json",
         title: "Download REC/RPS Data (JSON)",
-        description: "Download REC/RPS data in JSON format.",
+        description: "Download REC/RPS data in JSON format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
         { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
@@ -1297,6 +1242,7 @@ end`,
           { name: "limit", type: "integer", required: false, description: "Maximum number of results to return (max 1000)" }],
         examples: {
           python: `import requests
+import json
 
 url = "https://api.enerpricedata.com/datasets/download/rec-rps/json"
 headers = {"X-API-Key": "YOUR_API_KEY"}
@@ -1310,7 +1256,7 @@ params = {
     "limit": 100                                 # Optional: pagination limit (max 1000)
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 control_area = params["control_area"]
 start_op_date = params["start_operating_date"]
@@ -1336,7 +1282,7 @@ const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/jso
 const params = {
   'start_operating_date': '2025-08-25',
   'control_area': 'ERCOT',
-  'raw': False,
+  'raw': false,
   'skip': 0,
   'limit': 100
 };
@@ -1367,7 +1313,7 @@ uri = URI('https://api.enerpricedata.com/datasets/download/rec-rps/json')
 uri.query = URI.encode_www_form(
   'start_operating_date' => '2025-08-25',
   'control_area' => 'ERCOT',
-  'raw' => False,
+  'raw' => false,
   'skip' => 0,
   'limit' => 100
 )
@@ -1420,8 +1366,8 @@ curl -G "https://api.enerpricedata.com/datasets/download/rec-rps/json" \
         title: "Download Utility Price (Excel)",
         description: "Download utility price data in Excel format.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date for download" },
-          { name: "end_operating_date", type: "date", required: false, description: "Operating End date for download" }
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date for download" },
+          { name: "end_operating_date", type: "date", required: false, description: "End Publication Date for download" }
         ],
         examples: {
           python: `import requests
@@ -1435,7 +1381,7 @@ params = {
     "end_operating_date": "2025-08-15",          # Optional, for date range
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 end_op_date = params.get("end_operating_date", params["start_operating_date"])
 filename = f"EPD_UtilityPrice_{end_op_date}.xlsx"
@@ -1502,9 +1448,9 @@ end`,
         method: "GET",
         url: "/datasets/download/utility-price/csv",
         title: "Download Utility Price (CSV)",
-        description: "Download utility price data in CSV format.",
+        description: "Download utility price data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date for download" },
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date for download" },
         ],
         examples: {
           python: `import requests
@@ -1517,7 +1463,7 @@ params = {
     "start_operating_date": "2025-08-15",        # Required in YYYY-MM-DD format
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 end_op_date = params.get("end_operating_date", params["start_operating_date"])
 filename = f"EPD_UtilityPrice_{end_op_date}.zip"
@@ -1581,9 +1527,9 @@ end`,
         method: "GET",
         url: "/datasets/download/utility-price/json",
         title: "Download Utility Price (JSON)",
-        description: "Download utility price data in JSON format.",
+        description: "Download utility price data in JSON format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
-        { name: "start_operating_date", type: "date", required: true, description: "Operating date for download" },
+        { name: "start_operating_date", type: "date", required: true, description: "Publication Date for download" },
         { name: "raw", type: "boolean", required: false, description: "If true, returns raw JSON instead of file download" },
         { name: "skip", type: "integer", required: false, description: "Pagination offset for results" },
         { name: "limit", type: "integer", required: false, description: "Maximum number of results to return (max 1000)" }
@@ -1592,7 +1538,9 @@ end`,
           python: `import json
 import requests
 
-endpoint = "/datasets/download/utility-price/json"
+url = "https://api.enerpricedata.com/datasets/download/utility-price/json"
+
+headers = {"X-API-Key": "YOUR_API_KEY"}
 
 params = {
     "start_operating_date": "2025-08-15",        # Required
@@ -1601,7 +1549,7 @@ params = {
     "limit": 100                                 # Optional: pagination limit (max 1000)
 }
 
-response = requests.get(f"{base_url}{endpoint}", headers=headers, params=params)
+response = requests.get(url, headers=headers, params=params)
 
 start_op_date = params["start_operating_date"]
 filename = f"EPD_UtilityPrice_{start_op_date}.json"
@@ -1625,7 +1573,7 @@ else:
 const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/json');
 const params = {
   'start_operating_date': '2025-08-15',
-  'raw': False,
+  'raw': false,
   'skip': 0,
   'limit': 100
 };
@@ -1655,7 +1603,7 @@ require 'json'
 uri = URI('https://api.enerpricedata.com/datasets/download/utility-price/json')
 uri.query = URI.encode_www_form(
   'start_operating_date' => '2025-08-15',
-  'raw' => False,
+  'raw' => false,
   'skip' => 0,
   'limit' => 100
 )
@@ -1706,9 +1654,9 @@ curl -G "https://api.enerpricedata.com/datasets/download/utility-price/json" \
         method: "GET",
         url: "/datasets/download/naturalgas-utility-price",
         title: "Download Natural Gas Utility Price (Excel)",
-        description: "Single workbook with both summary and details sheets for one operating date. If <code>end_operating_date</code> is provided, returns a ZIP of single-date xlsx files for each date in the range.",
+        description: "Single workbook with both summary and details sheets for one Publication Date. If <code>end_operating_date</code> is provided, returns a ZIP of single-date xlsx files for each date in the range.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date (YYYY-MM-DD)" },
           { name: "end_operating_date", type: "date", required: false, description: "End date — when provided, returns a ZIP covering the inclusive range" }
         ],
         examples: {
@@ -1792,7 +1740,7 @@ end`,
         title: "Download Natural Gas Utility Price — Summary (CSV)",
         description: "Summary rows only, as a single CSV file.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date (YYYY-MM-DD)" }
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date (YYYY-MM-DD)" }
         ],
         examples: {
           python: `import requests
@@ -1867,7 +1815,7 @@ end`,
         title: "Download Natural Gas Utility Price — Details (CSV)",
         description: "Details rows only, as a single CSV file.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date (YYYY-MM-DD)" }
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date (YYYY-MM-DD)" }
         ],
         examples: {
           python: `import requests
@@ -1942,7 +1890,7 @@ end`,
         title: "Download Natural Gas Utility Price (CSV ZIP)",
         description: "Both summary and details CSVs bundled in a single ZIP archive.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date (YYYY-MM-DD)" }
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date (YYYY-MM-DD)" }
         ],
         examples: {
           python: `import requests
@@ -2017,7 +1965,7 @@ end`,
         title: "Download Natural Gas Utility Price (JSON)",
         description: "Returns the dataset as JSON. By default sends a downloadable .json file; set <code>raw=true</code> for an inline JSON response with paginated details.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Operating date (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "Publication Date (YYYY-MM-DD)" },
           { name: "raw", type: "boolean", required: false, description: "If true, returns inline JSON ({summary, details, pagination}) instead of a file" },
           { name: "offset", type: "integer", required: false, description: "Details-page offset (≥ 0). Only applies when raw=true" },
           { name: "limit", type: "integer", required: false, description: "Details-page size (1–1000, default 100). Only applies when raw=true" }
@@ -2060,7 +2008,7 @@ else:
 const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json');
 const params = {
   'start_operating_date': '2025-08-15',
-  'raw': False,
+  'raw': false,
   'offset': 0,
   'limit': 100
 };
@@ -2090,7 +2038,7 @@ require 'json'
 uri = URI('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json')
 uri.query = URI.encode_www_form(
   'start_operating_date' => '2025-08-15',
-  'raw' => False,
+  'raw' => false,
   'offset' => 0,
   'limit' => 100
 )
@@ -2234,7 +2182,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
         method: "GET",
         url: "/pricing/options",
         title: "Get Pricing Options (cascading dropdowns)",
-        description: "Discover the valid values for a pricing request. Call as you narrow ISO → State → Utility → Load Profile → Voltage → Load Zone; each response lists what is still available for the remaining fields.",
+        description: "Discover the valid values for a pricing request. Call as you narrow ISO → State → Utility → Load Profile → Load Zone → Capacity Zone → Voltage; each response lists what is still available for the remaining fields.",
         parameters: [
           { name: "iso", type: "string", required: true, description: "ISO region (PJM, ISONE, NYISO, ERCOT, MISO, SPP, CAISO)" },
           { name: "state", type: "string", required: false, description: "State filter" },
@@ -2312,7 +2260,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
           { name: "unit", type: "string", required: false, description: "Basis for your usage and $ rates: <code>\"MWh\"</code> (default) or <code>\"kWh\"</code>, spelled exactly. Sets how monthly_usage, the usd-mode adders and price_to_compare are read, and the basis every rate and energy figure in the response and the exports is reported in." },
           { name: "monthly_usage", type: "float[]", required: true, description: "Exactly 12 monthly usage values, January through December, in whichever <code>unit</code> you set; sum must be > 0." },
           { name: "capacity_zone", type: "string", required: false, description: "Capacity zone (if applicable)" },
-          { name: "price_to_compare", type: "float", required: false, description: "Your current $/MWh price; returns a delta vs the fair price" },
+          { name: "price_to_compare", type: "float", required: false, description: "your current supply price on your unit basis; returns a delta vs the fair price" },
           { name: "account_id", type: "string", required: false, description: "Your identifier for the account. Reporting only, echoed back in the response so you can match results to your own records." },
           { name: "account_address", type: "string", required: false, description: "Service address. Reporting only, echoed back in the response." },
           { name: "account_number", type: "string", required: false, description: "Utility account number. Reporting only, echoed back in the response." },
@@ -2360,7 +2308,7 @@ response = requests.post(url, headers=headers, json=payload)
 if response.status_code == 200:
     data = response.json()
     print(f"Fair market price: \${data['total_fr_price']} per {data['unit']}")
-    print(f"Delta vs price_to_compare: \${data['delta']}/MWh")
+    print(f"Delta vs price_to_compare: \${data['delta']} per {data['unit']}")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const response = await fetch('https://api.enerpricedata.com/pricing/calculate', {
@@ -2421,7 +2369,7 @@ res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.reque
 
 if res.is_a?(Net::HTTPSuccess)
   data = JSON.parse(res.body)
-  puts "Fair market price: $#{data['total_fr_price']}/MWh (delta $#{data['delta']})"
+  puts "Fair market price: $#{data['total_fr_price']} per #{data['unit']} (delta $#{data['delta']})"
 else
   puts "Error #{res.code}: #{res.body}"
 end`,
@@ -2629,7 +2577,7 @@ puts "Saved CSV"`,
     title: "Comparative Savings Analysis",
     description: `Compare what an account pays its supplier against the utility's <em>Price to Compare</em>, and get the savings back as JSON. Send a portfolio of meter reads and the results come back in the response. Electricity only.<br/><br/>
       <strong>Two calls, in this order.</strong> <code>GET /api/v1/utility-price/options</code> tells you which combinations you may price against, then <code>POST /api/v1/utility-price/comparative-analysis</code> prices your reads.<br/><br/>
-      <strong>Access:</strong> requires the <code>access_utility_price</code> permission. Both endpoints resolve the newest active price dataset themselves and report which one they used, so there is no operating date to pass.
+      <strong>Access:</strong> requires the <strong>Electricity Utility Price</strong> permission. Both endpoints resolve the newest active price dataset themselves and report which one they used, so there is no Publication Date to pass.
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
         <table class="w-full text-sm text-left border-collapse">
@@ -2650,7 +2598,7 @@ puts "Saved CSV"`,
         description: `Every State / Utility / Rate Class-Load Profile / Load Zone combination in the current price dataset, each with the range of months published for it. Call this first: <code>/comparative-analysis</code> rejects any read whose combination is not in this list, so this is where you get the exact strings to send.<br/><br/>
           Both filters are optional and independent, and supplying both narrows to rows matching state <strong>and</strong> utility. They are exact matches, not searches, ignoring capitalisation and surrounding whitespace: <code>?utility_name=con edison</code> works, <code>?utility_name=edison</code> returns nothing. A filter that matches nothing returns <strong>200 with <code>count: 0</code></strong>, not a 404.<br/><br/>
           Response is <code>{ operating_date, dataset_created_at, count, combinations }</code>. Each combination carries <code>state</code>, <code>utility_name</code>, <code>rate_class_load_profile</code>, <code>load_zone</code>, and a <code>coverage</code> object with <code>first_month</code> and <code>last_month</code> as <code>YYYY-MM</code>. Send those four strings back verbatim.<br/><br/>
-          The full list is small, roughly 634 rows. Fetch it once, cache it, and filter locally. There is deliberately no filter for rate class or load zone, because those are the long lists you want to search yourself. The set only changes when coverage expands, not on routine price refreshes, though the published months move with every refresh.`,
+          The full list is a few hundred rows, small enough to fetch once, cache, and filter locally. There is deliberately no filter for rate class or load zone, because those are the long lists you want to search yourself. The set only changes when coverage expands, not on routine price refreshes, though the published months move with every refresh.`,
         parameters: [
           { name: "state", type: "string", required: false, description: "Filter to one state. Exact match, case-insensitive, surrounding whitespace ignored." },
           { name: "utility_name", type: "string", required: false, description: "Filter to one utility. Exact match, case-insensitive, surrounding whitespace ignored." }
@@ -3032,7 +2980,7 @@ end`,
               <tr><td class="px-6 py-4 font-mono text-red-600 dark:text-red-400">404</td><td class="px-6 py-4 text-gray-600 dark:text-gray-300">Not Found — The requested data or endpoint could not be found.</td></tr>
               <tr><td class="px-6 py-4 font-mono text-red-600 dark:text-red-400">429</td><td class="px-6 py-4 text-gray-600 dark:text-gray-300">Too Many Requests — You've exceeded a rate limit. Response includes a <code class="text-xs">Retry-After</code> header (seconds) and a <code class="text-xs">limit</code> field describing the bucket that tripped. See the Rate Limits panel on the Home tab.</td></tr>
               <tr><td class="px-6 py-4 font-mono text-red-600 dark:text-red-400">500</td><td class="px-6 py-4 text-gray-600 dark:text-gray-300">Internal Server Error — Something went wrong on our end.</td></tr>
-              <tr><td class="px-6 py-4 font-mono text-red-600 dark:text-red-400">503</td><td class="px-6 py-4 text-gray-600 dark:text-gray-300">Service Unavailable — Rate-limit backend (Redis) is unreachable; requests fail closed. Retry after a short delay.</td></tr>
+              <tr><td class="px-6 py-4 font-mono text-red-600 dark:text-red-400">503</td><td class="px-6 py-4 text-gray-600 dark:text-gray-300">Service Unavailable — A backend dependency is unreachable; requests fail closed. Retry after a short delay.</td></tr>
             </tbody>
           </table>
         </div>
