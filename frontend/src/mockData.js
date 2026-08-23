@@ -55,15 +55,15 @@ export const mockApiData = {
               </tr>
               <tr class="border-b dark:border-gray-600">
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Ancillary/Uplift</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31). The NYISO dataset is additionally refreshed weekly, with the Publication Date falling on the Friday (e.g. 2026-08-14).</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month. The NYISO dataset is additionally updated by the first business day of each week.</td>
               </tr>
               <tr class="border-b dark:border-gray-600">
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">REC/RPS</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31).</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month.</td>
               </tr>
               <tr>
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">PTC Files</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday.</td>
               </tr>
             </tbody>
           </table>
