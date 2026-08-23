@@ -320,6 +320,7 @@ else
 end`,
           curl: `# Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
 # Replace 2026-08-17 with a current Publication Date before running.
+# Optional delivery-window filters: add --data-urlencode "start_date=2026-09-01" and "end_date=2031-09-01". Empty values are rejected with HTTP 422.
 curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures/csv" \
   -H "X-API-Key: YOUR_API_KEY" \
   -G \
@@ -327,8 +328,6 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures/csv"
   --data-urlencode "end_operating_date=2026-08-17" \
   --data-urlencode "control_area=ERCOT" \
   --data-urlencode "block_types=7x8,2x16" \
-  --data-urlencode "start_date=" \
-  --data-urlencode "end_date=" \
   -o "EPD_EnergyFutures_ERCOT_2026-08-17.csv"`
         }
       },
@@ -959,7 +958,7 @@ fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift/csv?\${
             ruby: `require 'net/http'
 require 'uri'
 
-url = URI('https://api.enerpricedata.com/datasets/download/ancillary-uplift/csv')
+uri = URI('https://api.enerpricedata.com/datasets/download/ancillary-uplift/csv')
 params = {
   # Publication Date. Ancillary/Uplift updates on the first business day of each month (2026-07-31 for ERCOT, PJM and ISONE).
   # The NYISO dataset is additionally updated on the last business day of each week - for NYISO pass control_area=NYISO with a weekly date such as 2026-08-14.
