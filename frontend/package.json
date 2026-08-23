@@ -68,8 +68,6 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build -r https://github.com/monkeyDepd/enerprice-api-docs.git",
     "deploy:netlify": "npm run build && echo 'Build ready for Netlify! Upload the build folder.'",
     "deploy:vercel": "npm run build && vercel --prod",
     "deploy:firebase": "npm run build && firebase deploy",

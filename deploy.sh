@@ -44,34 +44,16 @@ read -p "Enter your choice (1-5): " choice
 
 case $choice in
     1)
-        echo "🐙 Deploying to GitHub Pages..."
-        
-        # Check if gh-pages is installed
-        if ! npm list gh-pages &> /dev/null; then
-            echo "📦 Installing gh-pages..."
-            npm install --save-dev gh-pages
-        fi
-        
-        # Check if repository is initialized
-        if [ ! -d "../.git" ]; then
-            echo "❌ Git repository not found. Please initialize git first:"
-            echo "   git init"
-            echo "   git remote add origin <your-repo-url>"
-            exit 1
-        fi
-        
-        echo "🚀 Deploying..."
-        npm run deploy
-        
-        if [ $? -eq 0 ]; then
-            echo "✅ Deployed successfully to GitHub Pages!"
-            echo "📍 Your site should be available at: https://yourusername.github.io/your-repo-name"
-            echo "⚠️  Don't forget to:"
-            echo "   1. Update homepage in package.json"
-            echo "   2. Configure GitHub Pages in repository settings"
-        else
-            echo "❌ Deployment failed. Check the errors above."
-        fi
+        echo "🐙 GitHub Pages is deployed by CI, not from here."
+        echo ""
+        echo "Pushing to main runs .github/workflows/pages.yml, which builds"
+        echo "frontend/ and publishes it to https://docs.enerpricedata.com/"
+        echo "via actions/deploy-pages."
+        echo ""
+        echo "To release: merge to main and watch the run:"
+        echo "   gh run watch \$(gh run list --workflow=pages.yml -L1 --json databaseId --jq '.[0].databaseId')"
+        echo ""
+        echo "Deploying by hand would publish a build CI does not know about."
         ;;
         
     2)
