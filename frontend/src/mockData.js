@@ -55,15 +55,15 @@ export const mockApiData = {
               </tr>
               <tr class="border-b dark:border-gray-600">
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">Ancillary/Uplift</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated on the first business day of each month. The NYISO dataset is additionally updated on the first business day of each week.</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31). The NYISO dataset is additionally refreshed weekly, with the Publication Date falling on the Friday (e.g. 2026-08-14).</td>
               </tr>
               <tr class="border-b dark:border-gray-600">
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">REC/RPS</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated on the first business day of each month.</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">All markets updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31).</td>
               </tr>
               <tr>
                 <td class="py-2 px-3 font-semibold text-gray-1000 dark:text-gray-100">PTC Files</td>
-                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday.</td>
+                <td class="py-2 px-3 text-gray-600 dark:text-gray-300">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.</td>
               </tr>
             </tbody>
           </table>
@@ -146,34 +146,40 @@ else:
     print(f"Error {response.status_code}: {response.text}")
     
 print("Energy futures data downloaded successfully!")`,
-          javascript: `// Download Energy Futures Data
-const params = new URLSearchParams({
-  // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  start_operating_date: '2026-08-17',
-  end_operating_date: '2026-08-17',
-  control_area: 'ERCOT',
-  block_types: '7x8,2x16',
-  // start_date: '2026-09-01',   // Optional: delivery window start
-  // end_date: '2031-09-01'      // Optional: delivery window end
-});
+          javascript: `const fs = require('fs');
 
-const controlArea = params.get("control_area");
-const endDate = params.get("end_operating_date") || params.get("start_operating_date");
-const filename = \`EPD_EnergyFutures_\${controlArea}_\${endDate}.xlsx\`;
+async function main() {
+  // Download Energy Futures Data
 
-const response = await fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures?\${params}\`, {
-  headers: {
-    'X-API-Key': 'YOUR_API_KEY'
+  const params = new URLSearchParams({
+    // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    start_operating_date: '2026-08-17',
+    end_operating_date: '2026-08-17',
+    control_area: 'ERCOT',
+    block_types: '7x8,2x16',
+    // start_date: '2026-09-01',   // Optional: delivery window start
+    // end_date: '2031-09-01'      // Optional: delivery window end
+  });
+
+  const controlArea = params.get('control_area');
+  const endOpDate = params.get('end_operating_date') || params.get('start_operating_date');
+  const filename = \`EPD_EnergyFutures_\${controlArea}_\${endOpDate}.xlsx\`;
+
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures?\${params}\`, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
+
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
   }
-});
 
-const blob = await response.blob();
-const url = window.URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = filename;
-a.click();`,
+  fs.writeFileSync(filename, Buffer.from(await response.arrayBuffer()));
+  console.log(\`Saved as \${filename}\`);
+}
+
+main();`,
           ruby: `require 'net/http'
 
 uri = URI('https://api.enerpricedata.com/datasets/download/energy-futures')
@@ -253,41 +259,40 @@ if response.status_code == 200:
 else:
     # status and response text
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `// Download Energy Futures Data
-const params = new URLSearchParams({
-  // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  start_operating_date: "2026-08-17",
-  end_operating_date: "2026-08-17",
-  control_area: "ERCOT",
-  block_types: "7x8,2x16",
-  // start_date: "2026-09-01",   // Optional: delivery window start
-  // end_date: "2031-09-01"      // Optional: delivery window end
-});
+          javascript: `const fs = require('fs');
 
-const controlArea = params.get("control_area");
-const endOpDate = params.get("end_operating_date") || params.get("start_operating_date");
-const filename = \`EPD_EnergyFutures_\${controlArea}_\${endOpDate}.csv\`;
+async function main() {
+  // Download Energy Futures Data (CSV)
 
-fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures/csv?\${params.toString()}\`, {
-  method: "GET",
-  headers: {
-    "X-API-Key": "YOUR_API_KEY"
+  const params = new URLSearchParams({
+    // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    start_operating_date: '2026-08-17',
+    end_operating_date: '2026-08-17',
+    control_area: 'ERCOT',
+    block_types: '7x8,2x16',
+    // start_date: '2026-09-01',   // Optional: delivery window start
+    // end_date: '2031-09-01'      // Optional: delivery window end
+  });
+
+  const controlArea = params.get('control_area');
+  const endOpDate = params.get('end_operating_date') || params.get('start_operating_date');
+  const filename = \`EPD_EnergyFutures_\${controlArea}_\${endOpDate}.csv\`;
+
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures/csv?\${params}\`, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
+
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
   }
-})
-  .then(response => {
-    if (!response.ok) throw new Error(\`Error \${response.status}: \${response.statusText}\`);
-    return response.blob();
-  })
-  .then(blob => {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    console.log(\`Downloaded: \${filename}\`);
-  })
-  .catch(err => console.error("Download failed:", err));`,
+
+  fs.writeFileSync(filename, Buffer.from(await response.arrayBuffer()));
+  console.log(\`Saved as \${filename}\`);
+}
+
+main();`,
           ruby: `require 'net/http'
 
 uri = URI('https://api.enerpricedata.com/datasets/download/energy-futures/csv')
@@ -390,24 +395,28 @@ if response.status_code == 200:
         print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          javascript: `// Get Energy Futures JSON Data
-const params = new URLSearchParams({
-    // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-    // Replace 2026-08-17 with a current Publication Date before running.
-    start_operating_date: '2026-08-17',
-    control_area: 'ERCOT',
-    raw: 'true'
-});
+          javascript: `async function main() {
+  // Get Energy Futures JSON Data
+  const params = new URLSearchParams({
+      // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+      // Replace 2026-08-17 with a current Publication Date before running.
+      start_operating_date: '2026-08-17',
+      control_area: 'ERCOT',
+      raw: 'true'
+  });
 
-const response = await fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures/json?\${params}\`, {
-    headers: {
-        'X-API-Key': 'YOUR_API_KEY'
-    }
-});
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/energy-futures/json?\${params}\`, {
+      headers: {
+          'X-API-Key': 'YOUR_API_KEY'
+      }
+  });
 
-const data = await response.json();
-console.log('Retrieved energy futures records');
-console.log('Sample data structure available');`,
+  const data = await response.json();
+  console.log('Retrieved energy futures records');
+  console.log('Sample data structure available');
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'json'
 
@@ -497,27 +506,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures');
-const params = {
-  // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  'start_operating_date': '2026-08-17'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures');
+  const params = {
+    // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    'start_operating_date': '2026-08-17'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.xlsx\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.xlsx\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -587,27 +600,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures/csv');
-const params = {
-  // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  'start_operating_date': '2026-08-17'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures/csv');
+  const params = {
+    // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    'start_operating_date': '2026-08-17'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -688,34 +705,38 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures/json');
-const params = {
-  // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  'start_operating_date': '2026-08-17',
-  'raw': 'false',
-  'skip': 0,
-  'limit': 100
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-futures/json');
+  const params = {
+    // Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    'start_operating_date': '2026-08-17',
+    'raw': 'false',
+    'skip': 0,
+    'limit': 100
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const data = await response.json();
+  if (params.raw === 'true') {
+    console.log(\`Page \${data.page}: \${data.size} of \${data.total} records\`);
+  } else {
+    const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.json\`;
+    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+    console.log(\`Saved as \${filename}\`);
+  }
 }
 
-const data = await response.json();
-if (params.raw === 'true') {
-  console.log(\`Page \${data.page}: \${data.size} of \${data.total} records\`);
-} else {
-  const filename = \`EPD_NaturalGasFutures_\${params.start_operating_date}.json\`;
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-  console.log(\`Saved as \${filename}\`);
-}`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -813,36 +834,38 @@ if response.status_code == 200:
     print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          javascript: `const params = new URLSearchParams({
-  // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
-  // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
-  // Replace with a current Publication Date before running.
-  start_operating_date: '2026-07-31',
-  end_operating_date: '2026-07-31',
-  control_area: 'ERCOT',
-  start_date: '2026-09-01',
-  end_date: '2030-09-01'
-});
+          javascript: `const fs = require('fs');
 
-const response = await fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift?\${params}\`, {
-  headers: {
-    'X-API-Key': 'YOUR_API_KEY'
+async function main() {
+  const params = new URLSearchParams({
+    // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
+    // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
+    // Replace with a current Publication Date before running.
+    start_operating_date: '2026-07-31',
+    end_operating_date: '2026-07-31',
+    control_area: 'ERCOT',
+    start_date: '2026-09-01',
+    end_date: '2030-09-01'
+  });
+
+  const controlArea = params.get('control_area');
+  const endOpDate = params.get('end_operating_date') || params.get('start_operating_date');
+  const filename = \`EPD_AncillaryUplift_\${controlArea}_\${endOpDate}.xlsx\`;
+
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift?\${params}\`, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
+
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
   }
-});
 
-const blob = await response.blob();
-// Handle file download...
-const controlArea = params.get('control_area');
-const endOpDate = params.get('end_operating_date') || params.get('start_operating_date');
-const filename = \`EPD_AncillaryUplift_\${controlArea}_\${endOpDate}.xlsx\`;
+  fs.writeFileSync(filename, Buffer.from(await response.arrayBuffer()));
+  console.log(\`Saved as \${filename}\`);
+}
 
-const link = document.createElement('a');
-link.href = URL.createObjectURL(blob);
-link.download = filename;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-console.log(\`File downloaded successfully and saved as '\${filename}'\`);`,
+main();`,
           ruby: `require 'net/http'
 
 uri = URI('https://api.enerpricedata.com/datasets/download/ancillary-uplift')
@@ -921,40 +944,38 @@ if response.status_code == 200:
     print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          javascript: `const params = new URLSearchParams({
-  // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
-  // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
-  // Replace with a current Publication Date before running.
-  start_operating_date: "2026-07-31",
-  end_operating_date: "2026-07-31",
-  control_area: "ERCOT",
-  start_date: "2026-09-01",
-  end_date: "2030-09-01"
-});
+          javascript: `const fs = require('fs');
 
-const controlArea = params.get("control_area");
-const endOpDate = params.get("end_operating_date") || params.get("start_operating_date");
-const filename = \`EPD_AncillaryUplift_\${controlArea}_\${endOpDate}.csv\`;
+async function main() {
+  const params = new URLSearchParams({
+    // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
+    // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
+    // Replace with a current Publication Date before running.
+    start_operating_date: '2026-07-31',
+    end_operating_date: '2026-07-31',
+    control_area: 'ERCOT',
+    start_date: '2026-09-01',
+    end_date: '2030-09-01'
+  });
 
-fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift/csv?\${params.toString()}\`, {
-  method: "GET",
-  headers: {
-    "X-API-Key": "YOUR_API_KEY"
+  const controlArea = params.get('control_area');
+  const endOpDate = params.get('end_operating_date') || params.get('start_operating_date');
+  const filename = \`EPD_AncillaryUplift_\${controlArea}_\${endOpDate}.csv\`;
+
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift/csv?\${params}\`, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
+
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
   }
-})
-  .then(response => {
-    if (!response.ok) throw new Error(\`Error \${response.status}: \${response.statusText}\`);
-    return response.blob();
-  })
-  .then(blob => {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    console.log(\`Downloaded: \${filename}\`);
-  })
-  .catch(err => console.error("Download failed:", err));`,
+
+  fs.writeFileSync(filename, Buffer.from(await response.arrayBuffer()));
+  console.log(\`Saved as \${filename}\`);
+}
+
+main();`,
             ruby: `require 'net/http'
 require 'uri'
 
@@ -1061,30 +1082,33 @@ if response.status_code == 200:
         print(f" File downloaded successfully and saved as '{filename}'")
 else:
     print(f" Error {response.status_code}: {response.text}")`,
-          javascript: `// Get Ancillary Uplift JSON Data
-const params = new URLSearchParams({
-    // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
-    // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
-    // Replace with a current Publication Date before running.
-    start_operating_date: '2026-07-31',
-    control_area: 'ERCOT',
-    start_date: '2026-09-01',
-    end_date: '2030-09-01',
-    raw: 'false',
-    skip: '0',
-    limit: '100'
-});
+          javascript: `async function main() {
+  // Get Ancillary Uplift JSON Data
+  const params = new URLSearchParams({
+      // Publication Date. Ancillary/Uplift is updated by the first business day of each month; the Publication Date is the last business day of the month just ended (e.g. 2026-07-31 for ERCOT, PJM and ISONE).
+      // NYISO is additionally refreshed weekly, with the Publication Date falling on the Friday - pass control_area=NYISO with a Friday date such as 2026-08-14.
+      // Replace with a current Publication Date before running.
+      start_operating_date: '2026-07-31',
+      control_area: 'ERCOT',
+      start_date: '2026-09-01',
+      end_date: '2030-09-01',
+      raw: 'false',
+      skip: '0',
+      limit: '100'
+  });
 
+  const response = await fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift/json?\${params}\`, {
+      headers: {
+          'X-API-Key': 'YOUR_API_KEY'
+      }
+  });
 
-const response = await fetch(\`https://api.enerpricedata.com/datasets/download/ancillary-uplift/json?\${params}\`, {
-    headers: {
-        'X-API-Key': 'YOUR_API_KEY'
-    }
-});
+  const data = await response.json();
+  console.log('Retrieved ancillary uplift records');
+  console.log('Sample data structure available');
+}
 
-const data = await response.json();
-console.log('Retrieved ancillary uplift records');
-console.log('Sample data structure available');`,
+main();`,
           ruby: `require 'net/http'
 require 'json'
 
@@ -1176,30 +1200,34 @@ else:
     print(f" Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps');
-const params = {
-  // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
-  // Replace 2026-07-31 with a current Publication Date before running.
-  'start_operating_date': '2026-07-31',
-  'control_area': 'ERCOT',
-  'start_date': '2026-09-01',
-  'end_date': '2030-09-01'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps');
+  const params = {
+    // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
+    // Replace 2026-07-31 with a current Publication Date before running.
+    'start_operating_date': '2026-07-31',
+    'control_area': 'ERCOT',
+    'start_date': '2026-09-01',
+    'end_date': '2030-09-01'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1275,30 +1303,34 @@ else:
     print(f" Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/csv');
-const params = {
-  // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
-  // Replace 2026-07-31 with a current Publication Date before running.
-  'start_operating_date': '2026-07-31',
-  'control_area': 'ERCOT',
-  'start_date': '2026-09-01',
-  'end_date': '2030-09-01'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/csv');
+  const params = {
+    // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
+    // Replace 2026-07-31 with a current Publication Date before running.
+    'start_operating_date': '2026-07-31',
+    'control_area': 'ERCOT',
+    'start_date': '2026-09-01',
+    'end_date': '2030-09-01'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1388,35 +1420,39 @@ else:
     print(f" Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/json');
-const params = {
-  // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
-  // Replace 2026-07-31 with a current Publication Date before running.
-  'start_operating_date': '2026-07-31',
-  'control_area': 'ERCOT',
-  'raw': false,
-  'skip': 0,
-  'limit': 100
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/rec-rps/json');
+  const params = {
+    // Publication Date. REC/RPS is updated by the first business day of each month; the Publication Date is the last business day of the month just ended.
+    // Replace 2026-07-31 with a current Publication Date before running.
+    'start_operating_date': '2026-07-31',
+    'control_area': 'ERCOT',
+    'raw': false,
+    'skip': 0,
+    'limit': 100
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const data = await response.json();
+  if (params.raw) {
+    console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+  } else {
+    const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.json\`;
+    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+    console.log(\`Saved as \${filename}\`);
+  }
 }
 
-const data = await response.json();
-if (params.raw) {
-  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
-} else {
-  const filename = \`EPD_REC_RPS_\${params.control_area}_\${params.start_operating_date}.json\`;
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-  console.log(\`Saved as \${filename}\`);
-}`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -1516,28 +1552,32 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20',
-  'end_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20',
+    'end_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_UtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_UtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1602,27 +1642,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/summary/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/summary/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_UtilityPrice_Summary_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_UtilityPrice_Summary_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1685,27 +1729,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/details/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/details/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_UtilityPrice_Details_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_UtilityPrice_Details_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1772,27 +1820,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.zip\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.zip\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -1872,34 +1924,38 @@ else:
     print(f" Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/json');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20',
-  'raw': false,
-  'skip': 0,
-  'limit': 100
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/utility-price/json');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20',
+    'raw': false,
+    'skip': 0,
+    'limit': 100
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const data = await response.json();
+  if (params.raw) {
+    console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+  } else {
+    const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.json\`;
+    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+    console.log(\`Saved as \${filename}\`);
+  }
 }
 
-const data = await response.json();
-if (params.raw) {
-  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
-} else {
-  const filename = \`EPD_UtilityPrice_\${params.start_operating_date}.json\`;
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-  console.log(\`Saved as \${filename}\`);
-}`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -1998,28 +2054,32 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20',
-  'end_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20',
+    'end_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasUtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasUtilityPrice_\${params.end_operating_date || params.start_operating_date}.xlsx\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -2084,27 +2144,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/summary/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/summary/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasUtilityPrice_Summary_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasUtilityPrice_Summary_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -2167,27 +2231,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/details/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/details/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasUtilityPrice_Details_\${params.start_operating_date}.csv\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasUtilityPrice_Details_\${params.start_operating_date}.csv\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -2250,27 +2318,31 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/csv');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20'
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/csv');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20'
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.zip\`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filename, buffer);
+  console.log(\`Saved as \${filename}\`);
 }
 
-const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.zip\`;
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(filename, buffer);
-console.log(\`Saved as \${filename}\`);`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 
@@ -2349,34 +2421,38 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json');
-const params = {
-  // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
-  // Replace 2026-08-20 with a current Publication Date before running.
-  'start_operating_date': '2026-08-20',
-  'raw': false,
-  'offset': 0,
-  'limit': 100
-};
-Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+async function main() {
+  const url = new URL('https://api.enerpricedata.com/datasets/download/naturalgas-utility-price/json');
+  const params = {
+    // Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th in either case.
+    // Replace 2026-08-20 with a current Publication Date before running.
+    'start_operating_date': '2026-08-20',
+    'raw': false,
+    'offset': 0,
+    'limit': 100
+  };
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const data = await response.json();
+  if (params.raw) {
+    console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
+  } else {
+    const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.json\`;
+    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+    console.log(\`Saved as \${filename}\`);
+  }
 }
 
-const data = await response.json();
-if (params.raw) {
-  console.log('Raw JSON received:', Array.isArray(data) ? \`\${data.length} records\` : Object.keys(data));
-} else {
-  const filename = \`EPD_NaturalGasUtilityPrice_\${params.start_operating_date}.json\`;
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-  console.log(\`Saved as \${filename}\`);
-}`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -2563,15 +2639,19 @@ if response.status_code == 200:
     print("Load zones:", data["available_load_zones"])
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const params = new URLSearchParams({ iso: 'PJM', state: 'OH' });
+          javascript: `async function main() {
+  const params = new URLSearchParams({ iso: 'PJM', state: 'OH' });
 
-const response = await fetch(\`https://api.enerpricedata.com/pricing/options?\${params}\`, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(\`https://api.enerpricedata.com/pricing/options?\${params}\`, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-const data = await response.json();
-console.log('Utilities:', data.available_utilities);
-console.log('Load zones:', data.available_load_zones);`,
+  const data = await response.json();
+  console.log('Utilities:', data.available_utilities);
+  console.log('Load zones:', data.available_load_zones);
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -2665,39 +2745,43 @@ if response.status_code == 200:
     print(f"Delta vs price_to_compare: \${data['delta']} per {data['unit']}")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const response = await fetch('https://api.enerpricedata.com/pricing/calculate', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    unit: 'MWh',                // Optional: 'MWh' (default) or 'kWh'
-    iso: 'PJM',
-    state: 'OH',
-    utility_name: 'Ohio Power Company (AEP)',
-    load_zone: 'AEP',
-    load_profile: 'General Service Demand Metered Secondary (GS)',
-    voltage: 'Secondary',
-    // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
-    // Replace 2026-08-17 with a current Publication Date before running.
-    curve_date: '2026-08-17',
-    start_date: '2026-09-01',   // first of month
-    term_months: 12,
-    plc_kw: 150.0,
-    nspl_kw: 140.0,
-    monthly_usage: [42, 38, 41, 39, 45, 52,   // exactly 12, in the unit above
-                    58, 57, 50, 43, 40, 44],
-    price_to_compare: 78.50
-  })
-});
+          javascript: `async function main() {
+  const response = await fetch('https://api.enerpricedata.com/pricing/calculate', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      unit: 'MWh',                // Optional: 'MWh' (default) or 'kWh'
+      iso: 'PJM',
+      state: 'OH',
+      utility_name: 'Ohio Power Company (AEP)',
+      load_zone: 'AEP',
+      load_profile: 'General Service Demand Metered Secondary (GS)',
+      voltage: 'Secondary',
+      // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
+      // Replace 2026-08-17 with a current Publication Date before running.
+      curve_date: '2026-08-17',
+      start_date: '2026-09-01',   // first of month
+      term_months: 12,
+      plc_kw: 150.0,
+      nspl_kw: 140.0,
+      monthly_usage: [42, 38, 41, 39, 45, 52,   // exactly 12, in the unit above
+                      58, 57, 50, 43, 40, 44],
+      price_to_compare: 78.50
+    })
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-} else {
-  const data = await response.json();
-  console.log(\`Fair market price: $\${data.total_fr_price} per \${data.unit} (delta $\${data.delta})\`);
-}`,
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+  } else {
+    const data = await response.json();
+    console.log(\`Fair market price: $\${data.total_fr_price} per \${data.unit} (delta $\${data.delta})\`);
+  }
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -2790,31 +2874,35 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const payload = {
-  iso: 'PJM', state: 'OH', utility_name: 'Ohio Power Company (AEP)',
-  load_zone: 'AEP', load_profile: 'General Service Demand Metered Secondary (GS)', voltage: 'Secondary',
-  // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  curve_date: '2026-08-17', start_date: '2026-09-01', term_months: 12,
-  plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42, 38, 41, 39, 45, 52,
-                  58, 57, 50, 43, 40, 44]
-};
+async function main() {
+  const payload = {
+    iso: 'PJM', state: 'OH', utility_name: 'Ohio Power Company (AEP)',
+    load_zone: 'AEP', load_profile: 'General Service Demand Metered Secondary (GS)', voltage: 'Secondary',
+    // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    curve_date: '2026-08-17', start_date: '2026-09-01', term_months: 12,
+    plc_kw: 150.0, nspl_kw: 140.0,
+    monthly_usage: [42, 38, 41, 39, 45, 52,
+                    58, 57, 50, 43, 40, 44]
+  };
 
-const response = await fetch('https://api.enerpricedata.com/pricing/download/excel', {
-  method: 'POST',
-  headers: { 'X-API-Key': 'YOUR_API_KEY', 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
+  const response = await fetch('https://api.enerpricedata.com/pricing/download/excel', {
+    method: 'POST',
+    headers: { 'X-API-Key': 'YOUR_API_KEY', 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-} else {
-  const buffer = Buffer.from(await response.arrayBuffer());
-  const filename = \`pricing_report_\${payload.iso}_\${payload.start_date}.xlsx\`;
-  fs.writeFileSync(filename, buffer);
-  console.log(\`Saved as \${filename}\`);
-}`,
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+  } else {
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const filename = \`pricing_report_\${payload.iso}_\${payload.start_date}.xlsx\`;
+    fs.writeFileSync(filename, buffer);
+    console.log(\`Saved as \${filename}\`);
+  }
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -2891,26 +2979,30 @@ else:
     print(f"Error {response.status_code}: {response.text}")`,
           javascript: `const fs = require('fs');
 
-const payload = {
-  iso: 'PJM', state: 'OH', utility_name: 'Ohio Power Company (AEP)',
-  load_zone: 'AEP', load_profile: 'General Service Demand Metered Secondary (GS)', voltage: 'Secondary',
-  // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
-  // Replace 2026-08-17 with a current Publication Date before running.
-  curve_date: '2026-08-17', start_date: '2026-09-01', term_months: 12,
-  plc_kw: 150.0, nspl_kw: 140.0,
-  monthly_usage: [42, 38, 41, 39, 45, 52,
-                  58, 57, 50, 43, 40, 44]
-};
+async function main() {
+  const payload = {
+    iso: 'PJM', state: 'OH', utility_name: 'Ohio Power Company (AEP)',
+    load_zone: 'AEP', load_profile: 'General Service Demand Metered Secondary (GS)', voltage: 'Secondary',
+    // Curve Publication Date. Futures curves update daily by 9:00 AM ET, reflecting the prior business day's close.
+    // Replace 2026-08-17 with a current Publication Date before running.
+    curve_date: '2026-08-17', start_date: '2026-09-01', term_months: 12,
+    plc_kw: 150.0, nspl_kw: 140.0,
+    monthly_usage: [42, 38, 41, 39, 45, 52,
+                    58, 57, 50, 43, 40, 44]
+  };
 
-const response = await fetch('https://api.enerpricedata.com/pricing/download/csv', {
-  method: 'POST',
-  headers: { 'X-API-Key': 'YOUR_API_KEY', 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
+  const response = await fetch('https://api.enerpricedata.com/pricing/download/csv', {
+    method: 'POST',
+    headers: { 'X-API-Key': 'YOUR_API_KEY', 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-const buffer = Buffer.from(await response.arrayBuffer());
-fs.writeFileSync(\`pricing_report_\${payload.iso}_\${payload.start_date}.csv\`, buffer);
-console.log('Saved CSV');`,
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(\`pricing_report_\${payload.iso}_\${payload.start_date}.csv\`, buffer);
+  console.log('Saved CSV');
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -3003,24 +3095,28 @@ if response.status_code == 200:
               f"({coverage['first_month']} to {coverage['last_month']})")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const url = new URL('https://api.enerpricedata.com/api/v1/utility-price/options');
-url.searchParams.append('state', 'MD');
+          javascript: `async function main() {
+  const url = new URL('https://api.enerpricedata.com/api/v1/utility-price/options');
+  url.searchParams.append('state', 'MD');
 
-const response = await fetch(url, {
-  headers: { 'X-API-Key': 'YOUR_API_KEY' }
-});
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  });
 
-if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-  return;
+  if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+    return;
+  }
+
+  const data = await response.json();
+  console.log(\`Dataset \${data.operating_date}: \${data.count} combinations\`);
+  data.combinations.slice(0, 5).forEach(c => {
+    console.log(\`  \${c.state} | \${c.utility_name} | \${c.rate_class_load_profile} | \${c.load_zone} \` +
+                \`(\${c.coverage.first_month} to \${c.coverage.last_month})\`);
+  });
 }
 
-const data = await response.json();
-console.log(\`Dataset \${data.operating_date}: \${data.count} combinations\`);
-data.combinations.slice(0, 5).forEach(c => {
-  console.log(\`  \${c.state} | \${c.utility_name} | \${c.rate_class_load_profile} | \${c.load_zone} \` +
-              \`(\${c.coverage.first_month} to \${c.coverage.last_month})\`);
-});`,
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
@@ -3192,50 +3288,54 @@ elif response.status_code == 422:
         print(f"Rejected: {problem}")
 else:
     print(f"Error {response.status_code}: {response.text}")`,
-          javascript: `const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    reads: [
-      {
-        account_id: 'ACCT-1001',
-        state: 'MD',
-        utility_name: 'Baltimore Gas & Electric',
-        rate_class_load_profile: 'Residential Service (R)',
-        load_zone: 'BGE',
-        // Service period dates, not Publication Dates - pricing always uses the latest published Utility Price dataset.
-        service_start: '2026-01-15',
-        service_end: '2026-02-14',
-        convention: 'READ_START',
-        usage: 12500,             // kWh for the period
-        supply_price: 0.089       // $/kWh you pay today; optional
-      }
-    ]
-  })
-});
-
-if (response.status === 422) {
-  // Schema errors arrive as a list, rule errors as { errors: [...] }.
-  const { detail } = await response.json();
-  const problems = Array.isArray(detail) ? detail : detail.errors;
-  problems.forEach(p => console.error('Rejected:', p));
-} else if (!response.ok) {
-  console.error(\`Error \${response.status}: \${await response.text()}\`);
-} else {
-  const data = await response.json();
-  data.accounts.forEach(a => {
-    if (!a.supported) {
-      console.log(\`\${a.account_id}: not priced (\${a.reason})\`);
-      return;
-    }
-    console.log(\`\${a.account_id} (zone used: \${a.header.load_zone}): \` +
-                \`utility \${a.summary.avg_utility_price} \${a.price_unit}, \` +
-                \`savings \${a.summary.total_savings_dollar} total\`);
+          javascript: `async function main() {
+  const response = await fetch('https://api.enerpricedata.com/api/v1/utility-price/comparative-analysis', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      reads: [
+        {
+          account_id: 'ACCT-1001',
+          state: 'MD',
+          utility_name: 'Baltimore Gas & Electric',
+          rate_class_load_profile: 'Residential Service (R)',
+          load_zone: 'BGE',
+          // Service period dates, not Publication Dates - pricing always uses the latest published Utility Price dataset.
+          service_start: '2026-01-15',
+          service_end: '2026-02-14',
+          convention: 'READ_START',
+          usage: 12500,             // kWh for the period
+          supply_price: 0.089       // $/kWh you pay today; optional
+        }
+      ]
+    })
   });
-}`,
+
+  if (response.status === 422) {
+    // Schema errors arrive as a list, rule errors as { errors: [...] }.
+    const { detail } = await response.json();
+    const problems = Array.isArray(detail) ? detail : detail.errors;
+    problems.forEach(p => console.error('Rejected:', p));
+  } else if (!response.ok) {
+    console.error(\`Error \${response.status}: \${await response.text()}\`);
+  } else {
+    const data = await response.json();
+    data.accounts.forEach(a => {
+      if (!a.supported) {
+        console.log(\`\${a.account_id}: not priced (\${a.reason})\`);
+        return;
+      }
+      console.log(\`\${a.account_id} (zone used: \${a.header.load_zone}): \` +
+                  \`utility \${a.summary.avg_utility_price} \${a.price_unit}, \` +
+                  \`savings \${a.summary.total_savings_dollar} total\`);
+    });
+  }
+}
+
+main();`,
           ruby: `require 'net/http'
 require 'uri'
 require 'json'
