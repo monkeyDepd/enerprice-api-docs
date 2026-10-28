@@ -1,4 +1,4 @@
-import apiImage from './assets/api.png';
+import apiImage from '../assets/api.png';
 
 
 

@@ -43,42 +43,27 @@ yarn start
 
 Visit `http://localhost:3000` to see the documentation in action!
 
-## Customization
+## Where the content lives
 
-### Update Your API Information
+All page content is in `frontend/src/content/`. `App.js` renders it and holds no copy.
 
-1. **Edit API Data**: Modify `/src/mockData.js` to include your API endpoints
-2. **Update Branding**: Replace logo and company information in `/src/App.js`
-3. **Customize Colors**: Modify the theme in `tailwind.config.js`
+| File | What it holds |
+|---|---|
+| `content/index.js` | Sidebar groups, and which pages switch with the address toggle |
+| `content/v1/downloads.js` | Dataset pages on the new `/api/v1` addresses |
+| `content/v1/pricing.js` | Fair Market Pricing on the new addresses, single and batch |
+| `content/v1/savings.js` | Comparative Savings on the new addresses, JSON and file upload |
+| `content/legacy.js` | The product pages for the old addresses, unchanged from before the move |
+| `content/guides.js` | Shared pages: Home, Migration guide, Deprecation policy, Changelog, Response headers, Notebook |
+| `content/errors.js` | The Errors page |
+| `content/migration.js` | Deprecation and sunset dates, and the old-to-new address map |
+| `content/samples.js`, `content/batch.js` | Builders that write the Python, JavaScript, Ruby and cURL samples |
 
-### Example: Adding a New API Endpoint
+The address toggle at the top of the page switches the product pages between `v1` and `legacy`. Every other page stays the same. Links take the form `#/v1/<section>` or `#/legacy/<section>`, and each endpoint card has its own anchor.
 
-```javascript
-// In /src/mockData.js
-export const mockApiData = {
-  "your-endpoint": {
-    title: "Your API Endpoint",
-    description: "Description of your endpoint",
-    endpoints: [
-      {
-        method: "GET",
-        url: "/your/api/endpoint",
-        title: "Your Endpoint Title",
-        description: "Endpoint description",
-        parameters: [
-          { name: "param1", type: "string", required: true, description: "Parameter description" }
-        ],
-        examples: {
-          python: `import requests\nresponse = requests.get("https://api.yourservice.com/endpoint")`,
-          javascript: `fetch('https://api.yourservice.com/endpoint')`,
-          ruby: `require 'net/http'\nuri = URI('https://api.yourservice.com/endpoint')`,
-          curl: `curl -X GET "https://api.yourservice.com/endpoint"`
-        }
-      }
-    ]
-  }
-};
-```
+To change the deprecation or sunset date, edit `content/migration.js`. Every page reads the dates from there.
+
+The notebooks are `frontend/notebooks/demo.ipynb` (new addresses) and `demo_legacy.ipynb` (old addresses).
 
 ## Available Scripts
 
