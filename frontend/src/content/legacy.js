@@ -1,4 +1,4 @@
-import apiImage from './assets/api.png';
+import apiImage from '../assets/api.png';
 
 
 
@@ -34,7 +34,7 @@ export const mockApiData = {
           
           <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Rate Limits</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-300">All endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header indicating how many seconds to wait before retrying.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Most product endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header indicating how many seconds to wait before retrying.</p>
           </div>
         </div>
 
