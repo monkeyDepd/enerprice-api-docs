@@ -88,6 +88,13 @@ auth: {
         <li>Click on <strong>Create new API Key</strong>, give it a name, and click <strong>Create</strong>.</li>
         <li><em>(Optional)</em> Click <strong>Regenerate API Key</strong> if you lost the previous one.</li>
       </ol>
+      <p class="mt-4 text-gray-700 dark:text-gray-200">Send the key in the <code>X-API-Key</code> header on every request:</p>
+      <pre class="mt-2 bg-gray-900 text-gray-100 text-sm rounded-lg p-4 overflow-x-auto">curl -G "https://api.enerpricedata.com/api/v1/electricity/futures/download" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  --data-urlencode "format=csv" \
+  --data-urlencode "control_area=PJM" \
+  --data-urlencode "start_publication_date=2026-08-24" \
+  --output "EPD_EnergyFutures_PJM_08242026.csv"</pre>
     </div>
   `
 },
@@ -101,7 +108,7 @@ auth: {
         title: "Download Energy Futures (Excel)",
         description: "Download energy futures data in Excel format. Supports single date or date range downloads.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
           { name: "end_operating_date", type: "date", required: false, description: "End date for bulk download (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
           { name: "block_types", type: "string", required: false, description: "Block types, comma-separated (7x8,2x16,5x16)" },
@@ -220,7 +227,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures?star
         title: "Download Energy Futures (CSV)",
         description: "Download energy futures data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
           { name: "block_types", type: "string", required: false, description: "Block types, comma-separated (7x8,2x16,5x16)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
@@ -344,7 +351,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures/csv"
         parameters: [
             { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
             { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO, MISO)" },
-            { name: "block_types", type: "string", required: false, description: "Block types, Comma-separated (7x8,2x16,5x16) if not specified." },
+            { name: "block_types", type: "string", required: false, description: "Comma-separated block types, for example 7x8,2x16,5x16. Omit for every block." },
             { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
             { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" },
             { name: "raw", type: "boolean", required: false, description: "Return raw JSON response instead of file download" },
@@ -783,7 +790,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-futures/json
         title: "Download Ancillary Uplift (Excel)",
         description: "Download ancillary uplift data in Excel format.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
           { name: "end_operating_date", type: "date", required: false, description: "End date for bulk download" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, PJM, ISONE, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
@@ -894,7 +901,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/ancillary-uplift?st
         title: "Download Ancillary Uplift Curves (CSV)",
         description: "Download ancillary uplift data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
-          { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
+          { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
           { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, PJM, ISONE, NYISO)" },
           { name: "start_date", type: "date", required: false, description: "Start date filter (YYYY-MM-DD)" },
           { name: "end_date", type: "date", required: false, description: "End date filter (YYYY-MM-DD)" }
@@ -1133,11 +1140,11 @@ curl -G "https://api.enerpricedata.com/datasets/download/ancillary-uplift/json" 
         title: "Download REC/RPS Data (Excel)",
         description: "Download REC/RPS data in Excel format.",
         parameters: [
-        { name: "start_operating_date", type: "date", required: true, description: "Start date for download (YYYY-MM-DD)" },
+        { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
         { name: "end_operating_date", type: "date", required: false, description: "End date for bulk download (YYYY-MM-DD)" },
         { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
-        { name: "start_date", type: "date", required: false, description: "Start date filter for historical data" },
-        { name: "end_date", type: "date", required: false, description: "End date filter for historical data" }
+        { name: "start_date", type: "date", required: false, description: "Keep prices for delivery months from this date on (YYYY-MM-DD)" },
+        { name: "end_date", type: "date", required: false, description: "Keep prices for delivery months up to this date (YYYY-MM-DD)" }
 ],
         examples: {
           python: `import requests
@@ -1237,10 +1244,10 @@ curl -G "https://api.enerpricedata.com/datasets/download/rec-rps" \
         title: "Download REC/RPS Data (CSV)",
         description: "Download REC/RPS data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
-        { name: "start_operating_date", type: "date", required: true, description: "Start date for download" },
+        { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
         { name: "control_area", type: "string", required: true, description: "Control area (ERCOT, ISONE, PJM, NYISO)" },
-        { name: "start_date", type: "date", required: false, description: "Start date filter for historical data" },
-        { name: "end_date", type: "date", required: false, description: "End date filter for historical data" }
+        { name: "start_date", type: "date", required: false, description: "Keep prices for delivery months from this date on (YYYY-MM-DD)" },
+        { name: "end_date", type: "date", required: false, description: "Keep prices for delivery months up to this date (YYYY-MM-DD)" }
 ],
         examples: {
           python: `import requests
@@ -1843,8 +1850,7 @@ if response.status_code == 200:
     if params.get("raw"):
         # If raw=True, response is JSON data directly
         data = response.json()
-        print(f" Raw JSON data received: {len(data)} records")
-        print(f"Sample record: {data[0] if data else 'No data'}")
+        print(f"Raw JSON received: {len(data['summary'])} summary rows, {len(data['details'])} detail rows")
     else:
         # If raw=False or not specified, response is a file
         data = response.json()
@@ -2523,7 +2529,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
       </div>
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Pricing a portfolio</p>
-        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, within 60 requests/minute. Every account comes back as structured JSON you can store directly.</p>
+        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, within 60 requests/minute. Every account comes back as structured JSON you can store directly. To price many accounts from one file, use batch pricing, documented on the <a href="#/v1/fair-market-pricing" class="text-blue-700 dark:text-blue-300 underline">new addresses</a>.</p>
       </div>`,
     endpoints: [
       {
@@ -2621,7 +2627,7 @@ puts "Load zones: #{data['available_load_zones']}"`,
           { name: "utility_billing_surcharge", type: "float", required: false, description: "Utility billing surcharge adder, default 0.0. Paired with <code>utility_billing_surcharge_mode</code>." },
           { name: "other1", type: "float", required: false, description: "Free-use adder, default 0.0. Paired with <code>other1_mode</code>." },
           { name: "margin_mode / sleeve_fee_mode / utility_billing_surcharge_mode / other1_mode", type: "string", required: false, description: "How the matching adder is read: <code>\"usd\"</code> (default) treats it as a flat rate on your <code>unit</code> basis, <code>\"pct\"</code> treats it as a percent of the pre-adder supply cost." },
-          { name: "tax_rate", type: "float", required: false, description: "Percent gross-up applied to the full pre-tax total (default 0.0): final rate = (COGS + adders + margin) / (1 - tax_rate/100)" }
+          { name: "tax_rate", type: "float", required: false, description: "Percent gross-up applied to the full pre-tax total (default 0.0): final rate = (cost components + adders + margin) / (1 - tax_rate/100)" }
         ],
         examples: {
           python: `import requests
@@ -3426,7 +3432,7 @@ curl -X POST "https://api.enerpricedata.com/api/v1/utility-price/comparative-ana
         
         <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Documentation Feedback</h3>
-          <p class="text-gray-600 dark:text-gray-300">Found an issue with our documentation? Help us improve by reporting it.</p>
+          <p class="text-gray-600 dark:text-gray-300">Found an issue with our documentation? Email <a href="mailto:support@enerpricedata.com" class="text-blue-600 dark:text-blue-400 underline">support@enerpricedata.com</a>.</p>
           <p class="text-gray-600 dark:text-gray-300">
           We’re continuously enhancing our API docs with broader language support and features-thank you for your patience and feedback.
           </p>

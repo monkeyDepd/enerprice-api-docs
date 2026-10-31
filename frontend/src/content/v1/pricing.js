@@ -38,7 +38,7 @@ const limitsRow = `<tr class="border-b dark:border-gray-600 align-top">
               <td class="${td}">
                 <strong>60 requests/minute</strong> per API key. A <code>429</code> carries <code>Retry-After</code>.
                 <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li>Batch pricing adds <strong>600 rows per day</strong> and <strong>2 jobs at a time</strong> per user. Those two <code>429</code> responses carry no <code>Retry-After</code>: wait for a running job to finish, or for the next day.</li>
+                  <li>Batch pricing adds <strong>600 rows per day</strong> and <strong>2 jobs at a time</strong> per user. The day resets at 00:00 UTC, and rows that fail validation do not count. Those two <code>429</code> responses carry no <code>Retry-After</code>: wait for a running job to finish, or for the next day.</li>
                 </ul>
               </td>
             </tr>
@@ -63,6 +63,7 @@ const portfolioBox = `<div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border bor
       </div>`;
 
 const description = swap(old.description)
+  .replace(', so there is nothing to poll and no job state to track.', '. To price many accounts from one file, use batch pricing below.')
   .replace(LIMITS_ROW, limitsRow)
   .replace(PORTFOLIO_BOX, portfolioBox);
 
@@ -118,7 +119,7 @@ const batchEndpoints = [
     method: 'POST',
     url: `${BASE}/batch-upload`,
     title: 'Batch Pricing: Upload a File',
-    description: 'Step 2. Upload the completed template as <code>multipart/form-data</code>. The API checks every row, starts pricing the valid ones and returns a <code>batch_id</code>. Rows that fail the check come back in <code>validation_errors</code> and are not priced.',
+    description: 'Step 2. Upload the completed template as <code>multipart/form-data</code>. The API checks every row, starts pricing the valid ones and returns a <code>batch_id</code>. Rows that fail the check come back in <code>validation_errors</code> and are not priced. The API reads the unit from the monthly usage headers, <code>Jan (kWh)</code> or <code>Jan (MWh)</code>, so keep the headers of the template you downloaded.',
     parameters: [
       { name: 'file', type: 'file', required: true, description: 'The completed template: <code>.xlsx</code> with a <strong>Batch Pricing</strong> sheet, or <code>.csv</code> with the same columns. Up to <strong>200</strong> rows and 100 MiB.' },
     ],

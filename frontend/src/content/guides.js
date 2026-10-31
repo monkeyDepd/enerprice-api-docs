@@ -28,7 +28,7 @@ const publishingSchedule = `
         <tr class="border-b dark:border-gray-600"><td class="${tdStrong}">Electricity &amp; Natural Gas Futures</td><td class="${td}">Updated daily by 9:00 AM ET, reflecting the prior business day's close.</td></tr>
         <tr class="border-b dark:border-gray-600"><td class="${tdStrong}">Ancillary/Uplift</td><td class="${td}">All markets updated by the first business day of each month. The NYISO dataset is additionally updated by the first business day of each week.</td></tr>
         <tr class="border-b dark:border-gray-600"><td class="${tdStrong}">REC/RPS</td><td class="${td}">All markets updated by the first business day of each month.</td></tr>
-        <tr><td class="${tdStrong}">PTC Files</td><td class="${td}">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday.</td></tr>
+        <tr><td class="${tdStrong}">PTC Files</td><td class="${td}">Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th.</td></tr>
       </tbody>
     </table>
   </div>`;
@@ -95,7 +95,7 @@ const migration = {
         <table class="w-full text-sm text-left border-collapse">
           <thead><tr class="border-b dark:border-gray-600"><th class="${th}">Date</th><th class="${th}">What happens</th></tr></thead>
           <tbody>
-            <tr class="border-b dark:border-gray-600"><td class="${tdStrong} whitespace-nowrap">${DEPRECATION_DATE}</td><td class="${td}">The new addresses go live. The old addresses still return the same data, and every response from them carries <code>Deprecation</code>, <code>Sunset</code> and <code>Link</code> headers naming the new address.</td></tr>
+            <tr class="border-b dark:border-gray-600"><td class="${tdStrong} whitespace-nowrap">${DEPRECATION_DATE}</td><td class="${td}">The new addresses go live. The old addresses still return the same data, and every response from them carries <code>Deprecation</code>, <code>Sunset</code> and <code>Link</code> headers naming the new address. Errors on every address switch to Problem Details (see <a href="#/v1/errors" class="${link}">Errors</a>).</td></tr>
             <tr><td class="${tdStrong} whitespace-nowrap">${SUNSET_DATE}</td><td class="${td}">The old addresses return <code>410 Gone</code>.</td></tr>
           </tbody>
         </table>
@@ -105,7 +105,7 @@ const migration = {
         <h4 class="font-bold text-gray-900 dark:text-white mb-4">What changes for your code</h4>
         <ol class="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
           <li><strong>One address per product.</strong> The file type moves from the path to the <code>format</code> parameter: <code>xlsx</code>, <code>csv</code> or <code>json</code>. Utility Price adds <code>variant</code> for the summary and details CSV files.</li>
-          <li><strong>Parameters use their real names.</strong> <code>start_operating_date</code> becomes <code>start_publication_date</code>, <code>end_operating_date</code> becomes <code>end_publication_date</code>, and <code>offset</code> becomes <code>skip</code>. The values mean the same thing. Change the address and the parameter names in the same release.</li>
+          <li><strong>Parameters use their real names.</strong> <code>start_operating_date</code> becomes <code>start_publication_date</code>, <code>end_operating_date</code> becomes <code>end_publication_date</code>, and <code>offset</code>, used by the old Natural Gas Utility Price address, becomes <code>skip</code>. The values mean the same thing. Change the address and the parameter names in the same release.</li>
           <li><strong>JSON downloads return an object.</strong> For futures, Ancillary/Uplift and REC/RPS, the old addresses return a bare list of rows. The new addresses wrap the rows: <code>{"publication_date": ..., "operating_date": ..., "data": [...]}</code>. Read the rows from <code>data</code>. Utility Price JSON keeps its <code>summary</code> and <code>details</code> lists and adds <code>publication_date</code> and <code>operating_date</code> next to them.</li>
           <li><strong>Raw JSON pages put paging fields at the top level.</strong> A <code>raw=true</code> page carries <code>publication_date</code>, <code>skip</code>, <code>limit</code>, <code>total</code>, <code>page</code> and <code>size</code> next to the rows. Utility Price pages used to nest these in a <code>pagination</code> object.</li>
           <li><strong>Errors use Problem Details on every address, old ones included.</strong> Error bodies now follow RFC 9457 with <code>Content-Type: application/problem+json</code>. The <code>detail</code> field you read today is still there, and new fields add a stable <code>code</code> and a <code>request_id</code>. If your code checks for <code>Content-Type: application/json</code> on errors, accept <code>application/problem+json</code> too. See <a href="#/v1/errors" class="${link}">Errors</a>.</li>
@@ -259,7 +259,7 @@ const colabButton = (file, label, tone) => `
   </a>`;
 
 const notebook = {
-  title: 'Example',
+  title: 'Notebooks',
   description: 'Interactive Jupyter notebooks with a working Python example for every endpoint.',
   content: `
     <div class="space-y-6">

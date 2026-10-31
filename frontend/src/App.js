@@ -333,9 +333,26 @@ const SearchBox = ({ mode, onPick }) => {
   );
 };
 
+// Below Tailwind's md breakpoint the navigation becomes a slide-out drawer.
+const useIsMobile = () => {
+  const query = '(max-width: 767px)';
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
+};
+
 function App() {
   const [isDark, setIsDark] = useState(false);
-  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isMobile = useIsMobile();
+  // The drawer always shows labels; the desktop rail can collapse to icons.
+  const isNavCollapsed = !isMobile && navCollapsed;
   const initial = parseHash();
   const [mode, setMode] = useState(initial.mode);
   const [activeSection, setActiveSection] = useState('home');
@@ -377,6 +394,7 @@ function App() {
   }, [scrollToTarget]);
 
   const goTo = useCallback((m, target) => {
+    setDrawerOpen(false);
     const next = `#/${m}/${target || 'home'}`;
     if (window.location.hash === next) {
       scrollToTarget(target);
@@ -416,8 +434,13 @@ function App() {
     <BrowserRouter basename="/">
       <div className={`min-h-screen ${isDark ? 'dark' : ''}`}>
         <div className="flex h-screen bg-gray-50 dark:bg-black">
-          {/* Left Navigation Pane */}
-          <div className={`${isNavCollapsed ? 'w-20' : 'w-80'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col`}>
+          {/* Left Navigation Pane: a drawer on phones, a collapsible rail on wider screens */}
+          {isMobile && drawerOpen && (
+            <div className="fixed inset-0 z-30 bg-black/40" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+          )}
+          <div className={`${isMobile
+            ? `fixed inset-y-0 left-0 z-40 w-80 max-w-[85vw] shadow-xl ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : isNavCollapsed ? 'w-20' : 'w-80'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col`}>
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
               {!isNavCollapsed && (
@@ -440,9 +463,9 @@ function App() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+                onClick={() => (isMobile ? setDrawerOpen(false) : setNavCollapsed(!navCollapsed))}
                 className="h-9 w-9 p-0"
-                aria-label={isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+                aria-label={isMobile ? 'Close navigation' : isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
               >
                 {isNavCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
               </Button>
@@ -488,12 +511,17 @@ function App() {
           {/* Right Content Pane */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Top Bar */}
-            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">EnerPrice Data Center</h2>
+            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 md:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 md:gap-4">
+                <div className="flex items-center gap-3">
+                  {isMobile && (
+                    <Button variant="ghost" size="sm" onClick={() => setDrawerOpen(true)} className="h-9 w-9 p-0" aria-label="Open navigation">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  )}
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">EnerPrice Data Center</h2>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3 md:gap-4">
                   <AddressToggle mode={mode} onChange={(m) => goTo(m, activeSection)} />
                   <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
                     <SelectTrigger className="w-32">
@@ -511,7 +539,7 @@ function App() {
             </div>
 
             {/* Content */}
-            <div ref={contentRef} className="flex-1 overflow-y-auto p-8 space-y-16">
+            <div ref={contentRef} className="flex-1 overflow-y-auto p-4 md:p-8 space-y-16">
               {mode === MODES.legacy && (
                 <div className="flex gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-800 rounded-lg p-4">
                   <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-300 flex-shrink-0 mt-0.5" />

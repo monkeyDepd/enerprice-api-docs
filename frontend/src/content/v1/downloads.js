@@ -8,7 +8,7 @@ const CADENCE = {
   futures: "Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.",
   gas: "Publication Date. Natural gas futures update daily by 9:00 AM ET, reflecting the prior business day's close.",
   monthly: 'Publication Date. Updated by the first business day of each month; the Publication Date is the last business day of the month just ended.',
-  ptc: 'Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday.',
+  ptc: 'Publication Date. Published on the 20th of each month, or the next business day when the 20th falls on a weekend or holiday. The Publication Date stays the calendar 20th.',
 };
 
 const formatParam = {

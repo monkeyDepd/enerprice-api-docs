@@ -54,7 +54,7 @@ export const errorsPage = {
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">detail</td><td class="${td}">A human-readable explanation of this occurrence. The wording can change, so show it to people and do not parse it.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">status</td><td class="${td}">The HTTP status code.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">title</td><td class="${td}">A short summary of the status.</td></tr>
-              <tr class="border-b dark:border-gray-600"><td class="${tdCode}">type</td><td class="${td}">An identifier for the error class. It matches <code>code</code>.</td></tr>
+              <tr class="border-b dark:border-gray-600"><td class="${tdCode}">type</td><td class="${td}">A URL naming the error class. Its last part is <code>code</code> in lowercase with hyphens, for example <code>dataset-not-found</code> for <code>DATASET_NOT_FOUND</code>.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">instance</td><td class="${td}">The path you called.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">request_id</td><td class="${td}">The same value as the <code>X-Request-ID</code> response header. Quote it when you contact support.</td></tr>
               <tr><td class="${tdCode}">errors</td><td class="${td}">Present on <code>422</code> responses: one entry per invalid field, each with <code>loc</code>, <code>msg</code> and <code>type</code>.</td></tr>
