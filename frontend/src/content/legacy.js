@@ -2448,12 +2448,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
             <tr class="border-b dark:border-gray-600 align-top">
               <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Limits</td>
               <td class="py-3 px-3 text-gray-600 dark:text-gray-300">
-                <strong>10 requests/minute</strong>, <strong>600 requests/day</strong>, <strong>3 concurrent</strong>.
-                <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li><code>/pricing/calculate</code> and the two download endpoints hold separate per-minute counters, so pricing an account and exporting it do not spend each other's slots.</li>
-                  <li>Only <code>/pricing/calculate</code> charges the daily quota. <code>/pricing/options</code> is not metered at all.</li>
-                  <li>A burst <code>429</code> carries <code>Retry-After</code>. A daily-quota <code>429</code> does not, because the answer is always "tomorrow".</li>
-                </ul>
+                <strong>60 requests/minute</strong> per API key. A <code>429</code> carries <code>Retry-After</code>.
               </td>
             </tr>
             <tr class="align-top">
@@ -2481,12 +2476,12 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
                 <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Energy, read as kWh or MWh</td>
               </tr>
               <tr class="border-b border-amber-200 dark:border-amber-800">
-                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>margin</code>, <code>sleeve_fee</code>, <code>utility_billing_surcharge</code>, <code>other1</code> &mdash; in <code>usd</code> mode</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200"><code>margin</code>, <code>sleeve_fee</code>, <code>utility_billing_surcharge</code>, <code>other1</code>, in <code>usd</code> mode</td>
                 <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Yes</td>
                 <td class="py-2 px-3 text-amber-800 dark:text-amber-200">Flat rates, read as $/kWh or $/MWh</td>
               </tr>
               <tr class="border-b border-amber-200 dark:border-amber-800">
-                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">The same four adders &mdash; in <code>pct</code> mode</td>
+                <td class="py-2 px-3 text-amber-800 dark:text-amber-200">The same four adders, in <code>pct</code> mode</td>
                 <td class="py-2 px-3 text-amber-800 dark:text-amber-200">No</td>
                 <td class="py-2 px-3 text-amber-800 dark:text-amber-200">A share of supply cost, so unit-free</td>
               </tr>
@@ -2523,12 +2518,12 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
             </tbody>
           </table>
         </div>
-        <p class="text-sm text-amber-800 dark:text-amber-200 mt-3">The response echoes <code>unit</code> back. Field names keep their historical <code>_per_mwh</code> and <code>_mwh</code> suffixes for backward compatibility and <strong>no longer imply MWh</strong>: read <code>unit</code> to interpret them. Precision follows the basis too, since $/kWh needs more decimals to carry the same information &mdash; rates are rounded to <strong>5</strong> decimals on kWh and <strong>2</strong> on MWh, energy to <strong>1</strong> and <strong>4</strong>.</p>
+        <p class="text-sm text-amber-800 dark:text-amber-200 mt-3">The response echoes <code>unit</code> back. Field names keep their historical <code>_per_mwh</code> and <code>_mwh</code> suffixes for backward compatibility and <strong>no longer imply MWh</strong>: read <code>unit</code> to interpret them. Precision follows the basis too, since $/kWh needs more decimals to carry the same information. Rates are rounded to <strong>5</strong> decimals on kWh and <strong>2</strong> on MWh, energy to <strong>1</strong> and <strong>4</strong>.</p>
         <p class="text-sm text-amber-800 dark:text-amber-200 mt-2">Sending usage on the wrong basis is a 1000x error that still prices cleanly, so the engine checks the implied load factor, <code>annual kWh / (PLC kW &times; 8760)</code>. Outside <strong>5-110%</strong> you get a <code>warnings</code> entry naming <code>unit</code> as the likely culprit. The request is still priced, since unusual-but-real accounts exist, but treat it as a prompt to check the basis.</p>
       </div>
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Pricing a portfolio</p>
-        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, paced to 10 requests/minute. The daily quota of <strong>600 requests</strong> is the ceiling that matters, and it is the same 600 whichever way an account gets priced. Every account comes back as structured JSON you can store directly, so there is no bulk endpoint to reach for.</p>
+        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, within 60 requests/minute. Every account comes back as structured JSON you can store directly.</p>
       </div>`,
     endpoints: [
       {
@@ -2975,13 +2970,11 @@ curl -X POST "https://api.enerpricedata.com/pricing/download/csv" \
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
         <table class="w-full text-sm text-left border-collapse">
           <tbody>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">10 per endpoint</td></tr>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Accounts per day</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">600, counted in <strong>accounts</strong>, not calls</td></tr>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Concurrent requests</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">2</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">60</td></tr>
             <tr><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per request</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
           </tbody>
         </table>
-        <p class="text-sm text-blue-800 dark:text-blue-200 mt-3">A <code>429</code> carries a <code>Retry-After</code> header. The daily quota is charged <strong>after</strong> validation, so a rejected request costs nothing. One call pricing 50 accounts spends 50 of the 600, so the ceiling is the same whether you send one big request or fifty small ones.</p>
+        <p class="text-sm text-blue-800 dark:text-blue-200 mt-3">A <code>429</code> carries a <code>Retry-After</code> header.</p>
       </div>`,
     endpoints: [
       {
@@ -3122,7 +3115,7 @@ end`,
           </div>
           <div class="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
             <ul class="list-disc list-inside text-sm text-amber-800 dark:text-amber-200 space-y-2">
-              <li><strong>Leave out <code>load_zone</code> and one gets picked for you</strong> &mdash; the only zone, or the alphabetically first. Seventeen combinations have several (Con Edison NY has <code>ZONE H</code>, <code>I</code> and <code>J</code>) and they price differently, so check <code>header.load_zone</code> to see which one you got.</li>
+              <li><strong>Leave out <code>load_zone</code> and one gets picked for you</strong>: the only zone, or the alphabetically first. Seventeen combinations have several (Con Edison NY has <code>ZONE H</code>, <code>I</code> and <code>J</code>) and they price differently, so check <code>header.load_zone</code> to see which one you got.</li>
               <li><strong>A read with no <code>supply_price</code> still prices.</strong> You get <code>utility_price</code>, and the three savings fields come back <code>null</code>. At the account level <code>total_savings_dollar</code> is then <code>0.0</code>, not <code>null</code>.</li>
               <li><strong><code>priced: false</code> and <code>supported: false</code> are not errors</strong>, and both arrive with <code>200</code>. The first means those dates have no published price. The second means the whole account could not be priced, and <code>reason</code> says why. Other accounts are unaffected either way.</li>
               <li><strong>The savings averages cover fewer reads than <code>avg_utility_price</code></strong> in a mixed account. They only count priced reads that carry a <code>supply_price</code>, so the percentage's top and bottom describe the same reads.</li>

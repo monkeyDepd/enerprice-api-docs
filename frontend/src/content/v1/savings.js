@@ -9,8 +9,7 @@ const BASE = '/api/v1/electricity/utility-price';
 
 const swap = (value) => {
   if (typeof value === 'string') {
-    // House style drops dashes; reword the one the legacy text carries.
-    return value.split('/api/v1/utility-price').join(BASE).split('</strong> &mdash; the only zone').join('</strong>: the only zone');
+    return value.split('/api/v1/utility-price').join(BASE);
   }
   if (Array.isArray(value)) return value.map(swap);
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, swap(v)]));

@@ -15,14 +15,8 @@ const SWAPS = [
   ['/pricing/calculate', `${BASE}/calculate`],
 ];
 
-// House style drops dashes; reword the few the legacy text carries.
-const DASHES = [
-  [' &mdash; in <code>', ', in <code>'],
-  ['information &mdash; rates are rounded', 'information. Rates are rounded'],
-];
-
 const swap = (value) => {
-  if (typeof value === 'string') return [...SWAPS, ...DASHES].reduce((s, [from, to]) => s.split(from).join(to), value);
+  if (typeof value === 'string') return SWAPS.reduce((s, [from, to]) => s.split(from).join(to), value);
   if (Array.isArray(value)) return value.map(swap);
   if (value && typeof value === 'object') {
     return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, typeof v === 'function' ? v : swap(v)]));
