@@ -165,7 +165,7 @@ curl -G "${BASE_URL}${path}?${curlQuery(params)}" \\
 };
 
 // Page through raw JSON with skip/limit until every row is read.
-export const rawPaging = ({ path, params, note = [], pageSize = 1000 }) => {
+export const rawPaging = ({ path, params, note = [], pageSize = 100 }) => {
   const all = [...params, { key: 'format', value: 'json' }, { key: 'raw', value: 'true' }];
   return {
     python: `import requests

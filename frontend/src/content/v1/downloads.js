@@ -53,6 +53,9 @@ const rowFields = [
   { name: 'data[].contract', type: 'string', description: 'Contract code, or <code>null</code>.' },
 ];
 
+// Server file names carry the Publication Date as MMDDYYYY; query dates stay YYYY-MM-DD.
+const fileDate = (iso) => { const [y, m, d] = iso.split('-'); return `${m}${d}${y}`; };
+
 const rowsBody = (pub, rows) => JSON.stringify({ publication_date: pub, operating_date: pub, data: rows }, null, 2)
   .replace(/\n  \]\n\}$/, ',\n    ...\n  ]\n}');
 
@@ -66,7 +69,7 @@ const rowsProduct = ({ path, title, intro, params, single, range, cadence, fileP
   examples: fileDownload({
     path,
     params: [{ key: 'format', value: 'xlsx' }, ...fileParams, { key: 'start_publication_date', value: single }],
-    filename: `EPD_${filePrefix}_${iso}_${single}.xlsx`,
+    filename: `EPD_${filePrefix}_${iso}_${fileDate(single)}.xlsx`,
     note: [cadence, REPLACE(single)],
   }),
   moreExamples: [
@@ -76,7 +79,7 @@ const rowsProduct = ({ path, title, intro, params, single, range, cadence, fileP
       examples: fileDownload({
         path,
         params: [{ key: 'format', value: 'xlsx' }, ...fileParams, { key: 'start_publication_date', value: range[0] }, { key: 'end_publication_date', value: range[1] }],
-        filename: `EPD_${filePrefix}_${iso}_${range[0]}_to_${range[1]}.xlsx`,
+        filename: `EPD_${filePrefix}_${iso}_${fileDate(range[1])}.xlsx`,
         note: [cadence, REPLACE(`${range[0]} and ${range[1]}`).replace('a current Publication Date', 'current Publication Dates')],
       }),
     },
@@ -270,7 +273,7 @@ const utilityProduct = ({ path, title, intro, filePrefix, zipNames, summaryRow, 
     examples: fileDownload({
       path,
       params: [{ key: 'format', value: 'xlsx' }, { key: 'start_publication_date', value: single }],
-      filename: `EPD_${filePrefix}_ALL_${single}.xlsx`,
+      filename: `EPD_${filePrefix}_ALL_${fileDate(single)}.xlsx`,
       note,
     }),
     moreExamples: [
@@ -280,7 +283,7 @@ const utilityProduct = ({ path, title, intro, filePrefix, zipNames, summaryRow, 
         examples: fileDownload({
           path,
           params: [{ key: 'format', value: 'csv' }, { key: 'variant', value: 'summary' }, { key: 'start_publication_date', value: single }],
-          filename: `EPD_${filePrefix}_Summary_${single}.csv`,
+          filename: `EPD_${filePrefix}_ALL_${fileDate(single)}.csv`,
           note,
         }),
       },
@@ -290,7 +293,7 @@ const utilityProduct = ({ path, title, intro, filePrefix, zipNames, summaryRow, 
         examples: fileDownload({
           path,
           params: [{ key: 'format', value: 'csv' }, { key: 'start_publication_date', value: single }],
-          filename: `EPD_${filePrefix}_ALL_${single}.zip`,
+          filename: `EPD_${filePrefix}_ALL_${fileDate(single)}.zip`,
           note,
         }),
       },

@@ -26,7 +26,7 @@ const limitsBox = `<div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
         <table class="w-full text-sm text-left border-collapse">
           <tbody>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">60, the same as every other endpoint</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">60</td></tr>
             <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per request</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
             <tr><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per uploaded file</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
           </tbody>
@@ -35,7 +35,7 @@ const limitsBox = `<div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border
       </div>
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">JSON or file upload</p>
-        <p class="text-blue-800 dark:text-blue-200">Send reads as JSON to <code>/comparative-analysis</code> and get the results in the response. Or fill in the Excel template, upload it to <code>/savings-upload</code>, and download a results workbook when the job finishes. Both take up to 200 reads and price them the same way. Upload jobs and their results expire <strong>2 hours</strong> after upload.</p>
+        <p class="text-blue-800 dark:text-blue-200">Send reads as JSON to <code>/comparative-analysis</code> and get the results in the response. Or fill in the Excel template, upload it to <code>/savings-upload</code>, and download a results workbook when the job finishes. Both take up to 200 reads and use the same pricing. They validate differently: any invalid read fails a JSON request with <code>422</code> and prices nothing, while an upload skips the bad rows and prices the rest. Upload jobs and their results expire <strong>2 hours</strong> after upload.</p>
       </div>`;
 
 const description = swap(old.description)
@@ -44,6 +44,15 @@ const description = swap(old.description)
 
 const options = swap(oldOptions);
 options.description = options.description.replace('Response is <code>{ operating_date,', 'Response is <code>{ publication_date, operating_date,');
+// publication_date is the canonical field; operating_date is a deprecated echo of it.
+options.examples = Object.fromEntries(Object.entries(options.examples).map(([lang, code]) => [lang, code
+  .split("data['operating_date']").join("data['publication_date']")
+  .split('data.operating_date').join('data.publication_date')]));
+
+const analysis = swap(oldAnalysis);
+analysis.description = analysis.description
+  .replace('<strong>Response:</strong> <code>{ operating_date, accounts, warnings }</code>', '<strong>Response:</strong> <code>{ publication_date, operating_date, accounts, warnings }</code>')
+  .replace('<strong>Response:</strong>', 'Any validation error, including reads for one <code>account_id</code> that disagree on state, utility, rate class or load zone, fails the whole request with <code>422</code> and prices nothing.<br/><br/><strong>Response:</strong>');
 
 const BATCH = {
   base: BASE,
@@ -78,7 +87,7 @@ const uploadEndpoints = [
     method: 'POST',
     url: `${BASE}/savings-upload`,
     title: 'File Upload: Upload a File',
-    description: 'Step 2. Upload the completed template as <code>multipart/form-data</code>. The API checks every read, starts pricing the valid ones and returns a <code>batch_id</code>. Reads that fail the check come back in <code>errors</code> and are not priced.',
+    description: 'Step 2. Upload the completed template as <code>multipart/form-data</code>. The API checks every read, starts pricing the valid ones and returns a <code>batch_id</code>. Reads that fail the check come back in <code>errors</code> and are not priced. <code>errors</code> can also hold account consistency warnings, for example one <code>account_id</code> with two utilities. Those do not stop the job: every read counted in <code>accepted_reads</code> is priced.',
     parameters: [
       { name: 'file', type: 'file', required: true, description: 'The completed template as <code>.xlsx</code>. Up to <strong>200</strong> reads and 100 MiB.' },
     ],
@@ -133,7 +142,7 @@ export const v1Savings = {
   'comparative-savings': {
     title: old.title,
     description,
-    endpoints: [options, swap(oldAnalysis), ...uploadEndpoints],
+    endpoints: [options, analysis, ...uploadEndpoints],
     content: swap(old.content),
   },
 };

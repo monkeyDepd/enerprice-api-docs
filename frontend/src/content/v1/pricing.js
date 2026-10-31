@@ -42,7 +42,7 @@ const PORTFOLIO_BOX = /<div class="mt-4 bg-blue-50[^"]*"[^>]*>\s*<p[^>]*>Pricing
 const limitsRow = `<tr class="border-b dark:border-gray-600 align-top">
               <td class="${tdHead}">Limits</td>
               <td class="${td}">
-                <strong>60 requests/minute</strong> per API key, the same as every other endpoint. A <code>429</code> carries <code>Retry-After</code>.
+                <strong>60 requests/minute</strong> per API key. A <code>429</code> carries <code>Retry-After</code>.
                 <ul class="list-disc list-inside mt-2 space-y-1">
                   <li>Batch pricing adds <strong>600 rows per day</strong> and <strong>2 jobs at a time</strong> per user. Those two <code>429</code> responses carry no <code>Retry-After</code>: wait for a running job to finish, or for the next day.</li>
                 </ul>

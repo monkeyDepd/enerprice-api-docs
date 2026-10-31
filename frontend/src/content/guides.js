@@ -60,7 +60,7 @@ const home = {
         </div>
         <div class="${card}">
           <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Rate Limits</h4>
-          <p class="text-sm text-gray-600 dark:text-gray-300">All endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header giving the seconds to wait. Batch pricing adds daily and job limits, listed on the <a href="#/v1/fair-market-pricing" class="${link}">Fair Market Pricing</a> page.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Most product endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding that returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header giving the seconds to wait. Some products add further limits, listed on the product page. For example, <a href="#/v1/fair-market-pricing" class="${link}">Fair Market Pricing</a> batch pricing allows 600 rows per day and 2 jobs at a time.</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ const home = {
   --data-urlencode "format=xlsx" \\
   --data-urlencode "control_area=PJM" \\
   --data-urlencode "start_publication_date=2026-08-24" \\
-  --output "EPD_EnergyFutures_PJM_2026-08-24.xlsx"</pre>
+  --output "EPD_EnergyFutures_PJM_08242026.xlsx"</pre>
       </div>
 
       ${publishingSchedule}
@@ -105,7 +105,7 @@ const migration = {
         <h4 class="font-bold text-gray-900 dark:text-white mb-4">What changes for your code</h4>
         <ol class="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
           <li><strong>One address per product.</strong> The file type moves from the path to the <code>format</code> parameter: <code>xlsx</code>, <code>csv</code> or <code>json</code>. Utility Price adds <code>variant</code> for the summary and details CSV files.</li>
-          <li><strong>Parameters use their real names.</strong> <code>start_operating_date</code> becomes <code>start_publication_date</code>, <code>end_operating_date</code> becomes <code>end_publication_date</code>, and <code>offset</code> becomes <code>skip</code>. The values mean the same thing. The new addresses accept the old names until ${SUNSET_DATE}, so you can change the address first and rename the parameters after.</li>
+          <li><strong>Parameters use their real names.</strong> <code>start_operating_date</code> becomes <code>start_publication_date</code>, <code>end_operating_date</code> becomes <code>end_publication_date</code>, and <code>offset</code> becomes <code>skip</code>. The values mean the same thing. Change the address and the parameter names in the same release.</li>
           <li><strong>JSON downloads return an object.</strong> For futures, Ancillary/Uplift and REC/RPS, the old addresses return a bare list of rows. The new addresses wrap the rows: <code>{"publication_date": ..., "operating_date": ..., "data": [...]}</code>. Read the rows from <code>data</code>. Utility Price JSON keeps its <code>summary</code> and <code>details</code> lists and adds <code>publication_date</code> and <code>operating_date</code> next to them.</li>
           <li><strong>Raw JSON pages put paging fields at the top level.</strong> A <code>raw=true</code> page carries <code>publication_date</code>, <code>skip</code>, <code>limit</code>, <code>total</code>, <code>page</code> and <code>size</code> next to the rows. Utility Price pages used to nest these in a <code>pagination</code> object.</li>
           <li><strong>Errors use Problem Details on every address, old ones included.</strong> Error bodies now follow RFC 9457 with <code>Content-Type: application/problem+json</code>. The <code>detail</code> field you read today is still there, and new fields add a stable <code>code</code> and a <code>request_id</code>. If your code checks for <code>Content-Type: application/json</code> on errors, accept <code>application/problem+json</code> too. See <a href="#/v1/errors" class="${link}">Errors</a>.</li>
@@ -211,9 +211,9 @@ const changelog = {
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">New <code>/api/v1</code> addresses</p>
         <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
           <li>Every product has one address under <code>/api/v1/{commodity}/{product}</code>, with the file type in <code>format</code>. The old addresses are deprecated and return <code>410 Gone</code> from ${SUNSET_DATE}. See the <a href="#/v1/migration" class="${link}">migration guide</a>.</li>
-          <li>Date parameters are named <code>start_publication_date</code> and <code>end_publication_date</code>, and the paging offset is <code>skip</code>. The old names keep working on the new addresses until ${SUNSET_DATE}.</li>
+          <li>Date parameters are named <code>start_publication_date</code> and <code>end_publication_date</code>, and the paging offset is <code>skip</code>.</li>
           <li>JSON downloads on the new addresses return <code>{"publication_date", "operating_date", "data"}</code>. Utility Price JSON adds the two dates next to <code>summary</code> and <code>details</code>.</li>
-          <li>Fair Market Pricing and Comparative Savings follow the standard limit of 60 requests/minute per API key. Their separate per-minute, daily and concurrency limits no longer apply. Batch pricing keeps its limits of 600 rows per day and 2 jobs at a time.</li>
+          <li>Fair Market Pricing and Comparative Savings use the default <strong>60 requests/minute per API key</strong>. Batch pricing keeps <strong>600 rows per day</strong> and <strong>2 jobs at a time</strong>.</li>
           <li>Errors on every address use RFC 9457 Problem Details with a stable <code>code</code> and a <code>request_id</code>.</li>
           <li>Every response carries <code>X-Request-ID</code>.</li>
           <li>A CSV or JSON request with <code>end_publication_date</code> returns <code>400</code> and points to Excel, which supports ranges.</li>
