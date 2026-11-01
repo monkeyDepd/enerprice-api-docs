@@ -54,7 +54,7 @@ All page content is in `frontend/src/content/`. `App.js` renders it and holds no
 | `content/v1/pricing.js` | Fair Market Pricing on the new addresses, single and batch |
 | `content/v1/savings.js` | Comparative Savings on the new addresses, JSON and file upload |
 | `content/legacy.js` | The product pages for the old addresses, unchanged from before the move |
-| `content/guides.js` | Shared pages: Home, Migration guide, Deprecation policy, Changelog, Response headers, Notebook |
+| `content/guides.js` | Shared pages: Home, Migration guide, Deprecation policy, Response headers, Notebook |
 | `content/errors.js` | The Errors page |
 | `content/migration.js` | Deprecation and sunset dates, and the old-to-new address map |
 | `content/samples.js`, `content/batch.js` | Builders that write the Python, JavaScript, Ruby and cURL samples |

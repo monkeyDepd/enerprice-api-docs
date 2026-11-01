@@ -51,7 +51,7 @@ export const errorsPage = {
             <thead><tr class="border-b dark:border-gray-600"><th class="${th}">Field</th><th class="${th}">Meaning</th></tr></thead>
             <tbody>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">code</td><td class="${td}">A stable, machine-readable error code from the table below. Branch on this field.</td></tr>
-              <tr class="border-b dark:border-gray-600"><td class="${tdCode}">detail</td><td class="${td}">A human-readable explanation of this occurrence. The wording can change, so show it to people and do not parse it.</td></tr>
+              <tr class="border-b dark:border-gray-600"><td class="${tdCode}">detail</td><td class="${td}">A message about this error, for example which date or parameter caused it.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">status</td><td class="${td}">The HTTP status code.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">title</td><td class="${td}">A short summary of the status.</td></tr>
               <tr class="border-b dark:border-gray-600"><td class="${tdCode}">type</td><td class="${td}">A URL naming the error class. Its last part is <code>code</code> in lowercase with hyphens, for example <code>dataset-not-found</code> for <code>DATASET_NOT_FOUND</code>.</td></tr>

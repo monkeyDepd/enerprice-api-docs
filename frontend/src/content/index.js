@@ -1,4 +1,4 @@
-import { Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle, Flame, Calculator, TrendingDown, ArrowRightLeft, Clock, History, ListTree } from 'lucide-react';
+import { Book, Key, Zap, Settings, Database, Leaf, AlertTriangle, FileText, HelpCircle, Flame, Calculator, TrendingDown, ArrowRightLeft, Clock, ListTree } from 'lucide-react';
 import { mockApiData as legacy } from './legacy';
 import { guides } from './guides';
 import { v1Downloads } from './v1/downloads';
@@ -33,7 +33,6 @@ export const NAV_GROUPS = [
       { id: 'errors', title: 'Errors', icon: AlertTriangle },
       { id: 'response-headers', title: 'Response headers', icon: ListTree },
       { id: 'deprecation-policy', title: 'Deprecation policy', icon: Clock },
-      { id: 'changelog', title: 'Changelog', icon: History },
     ],
   },
   {

@@ -110,6 +110,7 @@ const migration = {
           <li><strong>Raw JSON pages put paging fields at the top level.</strong> A <code>raw=true</code> page carries <code>publication_date</code>, <code>skip</code>, <code>limit</code>, <code>total</code>, <code>page</code> and <code>size</code> next to the rows. Utility Price pages used to nest these in a <code>pagination</code> object.</li>
           <li><strong>Errors use Problem Details on every address, old ones included.</strong> Error bodies now follow RFC 9457 with <code>Content-Type: application/problem+json</code>. The <code>detail</code> field you read today is still there, and new fields add a stable <code>code</code> and a <code>request_id</code>. If your code checks for <code>Content-Type: application/json</code> on errors, accept <code>application/problem+json</code> too. See <a href="#/v1/errors" class="${link}">Errors</a>.</li>
           <li><strong>Every response carries <code>X-Request-ID</code>.</strong> Quote it when you contact support.</li>
+          <li><strong>Date ranges come as Excel.</strong> CSV and JSON take one Publication Date. On the new addresses, a CSV or JSON request with <code>end_publication_date</code> returns <code>400</code>; ask for <code>format=xlsx</code> to get a range. A Natural Gas Futures Excel range now returns one sheet per Publication Date on both the old and new addresses. The old address used to return the first date only.</li>
           <li><strong>Fair Market Pricing has one download address.</strong> <code>/pricing/download/excel</code> and <code>/pricing/download/csv</code> become <code>/api/v1/electricity/fair-market-pricing/download?format=xlsx|csv</code>. Request bodies and responses stay the same.</li>
           <li><strong>Comparative Savings moves under electricity.</strong> <code>/api/v1/utility-price/...</code> becomes <code>/api/v1/electricity/utility-price/...</code>. Request bodies and responses stay the same.</li>
         </ol>
@@ -175,7 +176,7 @@ const deprecationPolicy = {
     <div class="space-y-6">
       <div class="${card}">
         <h4 class="font-bold text-gray-900 dark:text-white mb-3">The 90-day window</h4>
-        <p class="text-gray-700 dark:text-gray-300">When we retire an address, it keeps working for 90 days from the deprecation date. During that window every response from it carries the three headers below. When the window closes, the address returns <code>410 Gone</code> with a Problem Details body. We announce each retirement in the <a href="#/v1/changelog" class="${link}">Changelog</a>.</p>
+        <p class="text-gray-700 dark:text-gray-300">When we retire an address, it keeps working for 90 days from the deprecation date. During that window every response from it carries the three headers below. When the window closes, the address returns <code>410 Gone</code> with a Problem Details body. Any address, parameter or response field we remove or rename goes through this window.</p>
         <p class="text-gray-700 dark:text-gray-300 mt-3">The current window runs from <strong>${DEPRECATION_DATE}</strong> to <strong>${SUNSET_DATE}</strong> and covers every address listed in the <a href="#/v1/migration" class="${link}">migration guide</a>.</p>
       </div>
 
@@ -191,36 +192,6 @@ const deprecationPolicy = {
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div class="${card}">
-        <h4 class="font-bold text-gray-900 dark:text-white mb-3">What we change without notice</h4>
-        <p class="text-gray-700 dark:text-gray-300">We may add endpoints, optional parameters, response fields and error codes at any time. Write clients that ignore fields they do not recognise. Removing or renaming an address, a parameter or a response field goes through a deprecation window.</p>
-      </div>
-    </div>
-  `,
-};
-
-const changelog = {
-  title: 'Changelog',
-  description: 'Changes to the API that affect integrations, newest first.',
-  content: `
-    <div class="space-y-6">
-      <div class="${card}">
-        <h4 class="font-bold text-gray-900 dark:text-white mb-1">${DEPRECATION_DATE}</h4>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">New <code>/api/v1</code> addresses</p>
-        <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-          <li>Every product has one address under <code>/api/v1/{commodity}/{product}</code>, with the file type in <code>format</code>. The old addresses are deprecated and return <code>410 Gone</code> from ${SUNSET_DATE}. See the <a href="#/v1/migration" class="${link}">migration guide</a>.</li>
-          <li>Date parameters are named <code>start_publication_date</code> and <code>end_publication_date</code>, and the paging offset is <code>skip</code>.</li>
-          <li>JSON downloads on the new addresses return <code>{"publication_date", "operating_date", "data"}</code>. Utility Price JSON adds the two dates next to <code>summary</code> and <code>details</code>.</li>
-          <li>Fair Market Pricing and Comparative Savings use the default <strong>60 requests/minute per API key</strong>. Batch pricing keeps <strong>600 rows per day</strong> and <strong>2 jobs at a time</strong>.</li>
-          <li>Errors on every address use RFC 9457 Problem Details with a stable <code>code</code> and a <code>request_id</code>.</li>
-          <li>Every response carries <code>X-Request-ID</code>.</li>
-          <li>A CSV or JSON request with <code>end_publication_date</code> returns <code>400</code> and points to Excel, which supports ranges.</li>
-          <li>A Natural Gas Futures Excel range returns one sheet per Publication Date. The old address returned the first date only.</li>
-          <li>New: <code>GET /api/v1/natural-gas/futures/settlement-points</code> lists valid settlement points.</li>
-          <li>Documented: batch pricing for Fair Market Pricing and batch upload for Comparative Savings.</li>
-        </ul>
       </div>
     </div>
   `,
@@ -284,7 +255,6 @@ export const guides = {
   errors: errorsPage,
   'response-headers': responseHeaders,
   'deprecation-policy': deprecationPolicy,
-  changelog,
   notebook,
   support: legacy.support,
 };
