@@ -5,7 +5,7 @@ import apiImage from '../assets/api.png';
 export const mockApiData = {
   home: {
     title: "EnerPrice API Documentation",
-    description: "Welcome to the Comprehensive EnerPrice API documentation, your gateway to accessing Energy Futures data, Ancillary and Uplift charges, REC credits and portfolio standards, Utility Pricing data, and detailed rate structures through our powerful API.",
+    description: "Welcome to the Comprehensive EnerPrice API documentation, your gateway to accessing Electricity Futures data, Ancillary and Uplift charges, REC credits and portfolio standards, Utility Pricing data, and detailed rate structures through our powerful API.",
     content: `
       <div class="space-y-6">
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
@@ -34,7 +34,7 @@ export const mockApiData = {
           
           <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Rate Limits</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-300">Most product endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header indicating how many seconds to wait before retrying.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Each product endpoint allows <strong>100 requests/minute per API key</strong>. Exceeding the limit returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header indicating how many seconds to wait before retrying.</p>
           </div>
         </div>
 
@@ -99,13 +99,13 @@ auth: {
   `
 },
   "energy-futures": {
-    title: "Energy Futures Data",
+    title: "Electricity Futures Data",
     description: "Access comprehensive energy futures pricing data across multiple control areas and block types. Download data in Excel, CSV, or JSON formats.",
     endpoints: [
       {
         method: "GET",
         url: "/datasets/download/energy-futures",
-        title: "Download Energy Futures (Excel)",
+        title: "Download Electricity Futures (Excel)",
         description: "Download energy futures data in Excel format. Supports single date or date range downloads.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
@@ -119,7 +119,7 @@ auth: {
           python: `
 import requests
 
-# Download Energy Futures Data
+# Download Electricity Futures Data
 url = "https://api.enerpricedata.com/datasets/download/energy-futures"
 
 headers = {
@@ -156,7 +156,7 @@ print("Energy futures data downloaded successfully!")`,
           javascript: `const fs = require('fs');
 
 async function main() {
-  // Download Energy Futures Data
+  // Download Electricity Futures Data
 
   const params = new URLSearchParams({
     // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
@@ -224,7 +224,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures?star
       {
         method: "GET",
         url: "/datasets/download/energy-futures/csv",
-        title: "Download Energy Futures (CSV)",
+        title: "Download Electricity Futures (CSV)",
         description: "Download energy futures data in CSV format. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "The dataset's Publication Date (YYYY-MM-DD)" },
@@ -236,7 +236,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures?star
         examples: {
           python: `import requests
 
-# Download Energy Futures Data
+# Download Electricity Futures Data
 url = "https://api.enerpricedata.com/datasets/download/energy-futures/csv"
 
 headers = {
@@ -269,7 +269,7 @@ else:
           javascript: `const fs = require('fs');
 
 async function main() {
-  // Download Energy Futures Data (CSV)
+  // Download Electricity Futures Data (CSV)
 
   const params = new URLSearchParams({
     // Publication Date. Electricity futures update daily by 9:00 AM ET, reflecting the prior business day's close.
@@ -346,7 +346,7 @@ curl -X GET "https://api.enerpricedata.com/datasets/download/energy-futures/csv"
       {
         method: "GET",
         url: "/datasets/download/energy-futures/json",
-        title: "Download Energy Futures (JSON)",
+        title: "Download Electricity Futures (JSON)",
         description: "Download energy futures data as JSON with pagination support. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
             { name: "start_operating_date", type: "date", required: true, description: "Date for data download (YYYY-MM-DD)" },
@@ -457,13 +457,13 @@ curl -G "https://api.enerpricedata.com/datasets/download/energy-futures/json" \\
   },
 
   "natgas-energy-futures": {
-    title: "Natural Gas Energy Futures Data",
+    title: "Natural Gas Futures Data",
     description: "Access Natural Gas <strong>futures</strong> (forward curve) pricing: monthly baseload gas prices published as a single combined dataset covering all settlement points. Download in Excel, CSV, or JSON.<br/><br/><strong>Data availability:</strong> curves are published on business days.",
     endpoints: [
       {
         method: "GET",
         url: "/datasets/download/naturalgas-futures",
-        title: "Download Natural Gas Energy Futures (Excel)",
+        title: "Download Natural Gas Futures (Excel)",
         description: "Download the natural gas futures curve for a Publication Date as an Excel workbook.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication Date of the curve (YYYY-MM-DD)" },
@@ -557,7 +557,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-futures" \
       {
         method: "GET",
         url: "/datasets/download/naturalgas-futures/csv",
-        title: "Download Natural Gas Energy Futures (CSV)",
+        title: "Download Natural Gas Futures (CSV)",
         description: "Download the natural gas futures curve for a Publication Date as a CSV file. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication Date of the curve (YYYY-MM-DD)" },
@@ -651,7 +651,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-futures/csv"
       {
         method: "GET",
         url: "/datasets/download/naturalgas-futures/json",
-        title: "Download Natural Gas Energy Futures (JSON)",
+        title: "Download Natural Gas Futures (JSON)",
         description: "Returns the natural gas futures curve as JSON. Set <code>raw=true</code> for an inline, paginated JSON response of the form <code>{ data, total, page, size }</code>. Accepts a single Publication Date; date ranges are Excel-only.",
         parameters: [
           { name: "start_operating_date", type: "date", required: true, description: "Publication Date of the curve (YYYY-MM-DD)" },
@@ -2454,7 +2454,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
             <tr class="border-b dark:border-gray-600 align-top">
               <td class="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Limits</td>
               <td class="py-3 px-3 text-gray-600 dark:text-gray-300">
-                <strong>60 requests/minute</strong> per API key. A <code>429</code> carries <code>Retry-After</code>.
+                <strong>100 requests/minute</strong> per API key on each endpoint. A <code>429</code> carries <code>Retry-After</code>.
               </td>
             </tr>
             <tr class="align-top">
@@ -2529,7 +2529,7 @@ curl -G "https://api.enerpricedata.com/datasets/download/naturalgas-utility-pric
       </div>
       <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Pricing a portfolio</p>
-        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, within 60 requests/minute. Every account comes back as structured JSON you can store directly. To price many accounts from one file, use batch pricing, documented on the <a href="#/v1/fair-market-pricing" class="text-blue-700 dark:text-blue-300 underline">new addresses</a>.</p>
+        <p class="text-blue-800 dark:text-blue-200">Loop <code>POST /pricing/calculate</code>, one call per account, within 100 requests/minute. Every account comes back as structured JSON you can store directly. To price many accounts from one file, use batch pricing, documented on the <a href="#/v1/fair-market-pricing" class="text-blue-700 dark:text-blue-300 underline">new addresses</a>.</p>
       </div>`,
     endpoints: [
       {
@@ -2976,7 +2976,7 @@ curl -X POST "https://api.enerpricedata.com/pricing/download/csv" \
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
         <table class="w-full text-sm text-left border-collapse">
           <tbody>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">60</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute per endpoint</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">100</td></tr>
             <tr><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per request</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
           </tbody>
         </table>

@@ -112,7 +112,7 @@ const ERCOT_REC_ROW = { control_area: 'ERCOT', state: 'TX', load_zone: 'ALL', bl
 const NG_ROW = { settlement_point: 'Algonquin', state: 'All', utility: 'All', cost_group: 'NG Futures', cost_component: 'NG Futures', uom: '$/MMBtu', price_date: '08-01-2026', price: 2.55 };
 
 const energyFutures = {
-  title: 'Energy Futures Data',
+  title: 'Electricity Futures Data',
   description: 'Electricity futures prices by control area, load zone and block type. One address serves Excel, CSV and JSON.',
   endpoints: [
     rowsProduct({
@@ -173,7 +173,7 @@ const settlementPoints = {
 };
 
 const natgasFutures = {
-  title: 'Natural Gas Energy Futures Data',
+  title: 'Natural Gas Futures Data',
   description: 'Natural gas futures (forward curve) prices: monthly baseload gas prices for every settlement point, published as one dataset. One address serves Excel, CSV and JSON.<br/><br/><strong>Settlement points are case sensitive.</strong> Get the valid values from <code>GET /api/v1/natural-gas/futures/settlement-points</code>.',
   endpoints: [
     settlementPoints,
