@@ -1,10 +1,11 @@
 // Single source for the EOM address change: dates, and the old-to-new mapping used by
 // the migration guide table and the "Use instead" badges on legacy endpoint cards.
 
-export const DEPRECATION_DATE = 'November 1, 2026';
-export const SUNSET_DATE = 'January 30, 2027';
-export const SUNSET_HTTP_DATE = 'Sat, 30 Jan 2027 00:00:00 GMT';
-export const DEPRECATION_HEADER = '@1793491200'; // 2026-11-01T00:00:00Z as a Unix timestamp
+export const LIVE_DATE = 'November 1, 2026';
+export const DEPRECATION_DATE = 'November 9, 2026';
+export const SUNSET_DATE = 'February 7, 2027';
+export const SUNSET_HTTP_DATE = 'Sun, 07 Feb 2027 00:00:00 GMT';
+export const DEPRECATION_HEADER = '@1794182400'; // 2026-11-09T00:00:00Z as a Unix timestamp
 
 // Legacy method + path -> new path (with the query the server adds in the Link header).
 export const SUCCESSORS = {
@@ -46,6 +47,26 @@ export const SUCCESSORS = {
   'GET /api/v1/utility-price/savings-status/{batch_id}': '/api/v1/electricity/utility-price/savings-status/{batch_id}',
   'GET /api/v1/utility-price/savings-download/{batch_id}': '/api/v1/electricity/utility-price/savings-download/{batch_id}',
   'GET /api/v1/utility-price/savings-jobs': '/api/v1/electricity/utility-price/savings-jobs',
+  // Lookup and chart addresses.
+  'GET /graph/api/v1/energy-futures/load-zones': '/api/v1/electricity/futures/load-zones',
+  'POST /graph/api/v1/energy-futures/graph-data': '/api/v1/electricity/futures/graph-data',
+  'GET /graph/api/v1/naturalgas-futures/settlement-points': '/api/v1/natural-gas/futures/settlement-points',
+  'POST /graph/api/v1/naturalgas-futures/graph-data': '/api/v1/natural-gas/futures/graph-data',
+  'GET /graph/api/v1/ancillary-uplift/load-zones': '/api/v1/electricity/ancillary-uplift/load-zones',
+  'GET /graph/api/v1/ancillary-uplift/capacity-zones': '/api/v1/electricity/ancillary-uplift/capacity-zones',
+  'POST /graph/api/v1/ancillary-uplift/graph-data': '/api/v1/electricity/ancillary-uplift/graph-data',
+  'GET /graph/api/v1/rec/states': '/api/v1/electricity/rec-rps/states',
+  'POST /graph/api/v1/rec/graph-data': '/api/v1/electricity/rec-rps/graph-data',
+  'GET /graph/api/v1/utility-price/states': '/api/v1/electricity/utility-price/states',
+  'GET /graph/api/v1/utility-price/utilities': '/api/v1/electricity/utility-price/utilities',
+  'GET /graph/api/v1/utility-price/rate-classes': '/api/v1/electricity/utility-price/rate-classes',
+  'GET /graph/api/v1/utility-price/load-zones': '/api/v1/electricity/utility-price/load-zones',
+  'POST /graph/api/v1/utility-price/graph-data': '/api/v1/electricity/utility-price/graph-data',
+  'GET /graph/api/v1/naturalgas-utility-price/states': '/api/v1/natural-gas/utility-price/states',
+  'GET /graph/api/v1/naturalgas-utility-price/utilities': '/api/v1/natural-gas/utility-price/utilities',
+  'GET /graph/api/v1/naturalgas-utility-price/rate-classes': '/api/v1/natural-gas/utility-price/rate-classes',
+  'GET /graph/api/v1/naturalgas-utility-price/publication-dates': '/api/v1/natural-gas/utility-price/publication-dates',
+  'POST /graph/api/v1/naturalgas-utility-price/graph-data': '/api/v1/natural-gas/utility-price/graph-data',
 };
 
 // Which docs section each new path belongs to, so a legacy badge can jump to it.

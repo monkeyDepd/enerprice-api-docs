@@ -25,7 +25,7 @@ const limitsBox = `<div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border
         <p class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Limits, per API key</p>
         <table class="w-full text-sm text-left border-collapse">
           <tbody>
-            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">60</td></tr>
+            <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Requests per minute per endpoint</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">100</td></tr>
             <tr class="border-b border-blue-200 dark:border-blue-800"><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per request</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
             <tr><td class="py-2 px-3 text-blue-800 dark:text-blue-200">Reads per uploaded file</td><td class="py-2 px-3 text-blue-800 dark:text-blue-200">200</td></tr>
           </tbody>

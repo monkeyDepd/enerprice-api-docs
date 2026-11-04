@@ -17,8 +17,8 @@ export const NAV_GROUPS = [
   {
     title: 'Products',
     items: [
-      { id: 'energy-futures', title: 'Energy Futures', icon: Zap },
-      { id: 'natgas-energy-futures', title: 'Natural Gas Energy Futures', icon: Flame },
+      { id: 'energy-futures', title: 'Electricity Futures', icon: Zap },
+      { id: 'natgas-energy-futures', title: 'Natural Gas Futures', icon: Flame },
       { id: 'ancillary', title: 'Ancillary Uplift', icon: Settings },
       { id: 'rec-rps', title: 'REC/RPS', icon: Leaf },
       { id: 'utility-price', title: 'Utility Price', icon: Database },

@@ -1,5 +1,5 @@
 import { mockApiData as legacy } from './legacy';
-import { DEPRECATION_DATE, SUNSET_DATE, SUNSET_HTTP_DATE, DEPRECATION_HEADER, SUCCESSORS } from './migration';
+import { LIVE_DATE, DEPRECATION_DATE, SUNSET_DATE, SUNSET_HTTP_DATE, DEPRECATION_HEADER, SUCCESSORS } from './migration';
 import { errorsPage } from './errors';
 
 // Shared pages: the same text shows whichever address toggle is active.
@@ -13,7 +13,7 @@ const link = 'underline text-blue-600 dark:text-blue-300 hover:text-blue-800 dar
 
 const notice = `
   <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-800 rounded-lg p-6">
-    <h3 class="text-lg font-semibold text-amber-900 dark:text-amber-100 mb-2">New addresses from ${DEPRECATION_DATE}</h3>
+    <h3 class="text-lg font-semibold text-amber-900 dark:text-amber-100 mb-2">New addresses from ${LIVE_DATE}</h3>
     <p class="text-amber-900 dark:text-amber-100">Every product now has one address under <code>/api/v1/</code>. The old addresses keep working until <strong>${SUNSET_DATE}</strong> and return <code>410 Gone</code> after that. The <a href="#/v1/migration" class="${link}">migration guide</a> lists every old address with its replacement.</p>
   </div>`;
 
@@ -35,7 +35,7 @@ const publishingSchedule = `
 
 const home = {
   title: 'EnerPrice API Documentation',
-  description: 'The EnerPrice API serves Energy Futures, Natural Gas Futures, Ancillary/Uplift, REC/RPS and Utility Price datasets, and runs Fair Market Pricing and Comparative Savings calculations.',
+  description: 'The EnerPrice API serves Electricity Futures, Natural Gas Futures, Ancillary/Uplift, REC/RPS and Utility Price datasets, and runs Fair Market Pricing and Comparative Savings calculations.',
   content: `
     <div class="space-y-6">
       ${notice}
@@ -60,7 +60,7 @@ const home = {
         </div>
         <div class="${card}">
           <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Rate Limits</h4>
-          <p class="text-sm text-gray-600 dark:text-gray-300">Most product endpoints are limited to <strong>60 requests/minute per API key</strong>. Exceeding that returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header giving the seconds to wait. Some products add further limits, listed on the product page. For example, <a href="#/v1/fair-market-pricing" class="${link}">Fair Market Pricing</a> batch pricing allows 600 rows per day and 2 jobs at a time.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Each product endpoint allows <strong>100 requests/minute per API key</strong>. Exceeding that returns <code class="text-xs">HTTP 429</code> with a <code class="text-xs">Retry-After</code> header giving the seconds to wait. Some products add further limits, listed on the product page. For example, <a href="#/v1/fair-market-pricing" class="${link}">Fair Market Pricing</a> batch pricing allows 600 rows per day and 2 jobs at a time.</p>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ const mappingRows = Object.entries(SUCCESSORS).map(([oldKey, newPath]) => {
 
 const migration = {
   title: 'Migration guide',
-  description: `On ${DEPRECATION_DATE} every product moved to one address under <code>/api/v1/</code>. The old addresses keep working until ${SUNSET_DATE}. From that date they return <code>410 Gone</code>, so move your integration before then.`,
+  description: `On ${LIVE_DATE} every product moved to one address under <code>/api/v1/</code>. The old addresses keep working until ${SUNSET_DATE}. From that date they return <code>410 Gone</code>, so move your integration before then.`,
   content: `
     <div class="space-y-6">
       <div class="${card}">
@@ -95,7 +95,8 @@ const migration = {
         <table class="w-full text-sm text-left border-collapse">
           <thead><tr class="border-b dark:border-gray-600"><th class="${th}">Date</th><th class="${th}">What happens</th></tr></thead>
           <tbody>
-            <tr class="border-b dark:border-gray-600"><td class="${tdStrong} whitespace-nowrap">${DEPRECATION_DATE}</td><td class="${td}">The new addresses go live. The old addresses still return the same data, and every response from them carries <code>Deprecation</code>, <code>Sunset</code> and <code>Link</code> headers naming the new address. Errors on every address switch to Problem Details (see <a href="#/v1/errors" class="${link}">Errors</a>).</td></tr>
+            <tr class="border-b dark:border-gray-600"><td class="${tdStrong} whitespace-nowrap">${LIVE_DATE}</td><td class="${td}">The new addresses go live. The old addresses still return the same data, and every response from them carries <code>Deprecation</code>, <code>Sunset</code> and <code>Link</code> headers naming the new address. Errors on every address switch to Problem Details (see <a href="#/v1/errors" class="${link}">Errors</a>).</td></tr>
+            <tr class="border-b dark:border-gray-600"><td class="${tdStrong} whitespace-nowrap">${DEPRECATION_DATE}</td><td class="${td}">The 90-day deprecation window starts.</td></tr>
             <tr><td class="${tdStrong} whitespace-nowrap">${SUNSET_DATE}</td><td class="${td}">The old addresses return <code>410 Gone</code>.</td></tr>
           </tbody>
         </table>
